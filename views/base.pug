@@ -1,0 +1,41 @@
+doctype html
+html
+  head
+    block head
+      meta(charset='UTF-8')
+      meta(name='viewport' content='width=device-width, initial-scale=1.0')
+      link(rel='stylesheet' href='/css/main.css')
+      link(rel='shortcut icon' type='image/png' href='/img/logo.svg')
+      link(rel='stylesheet' href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800&display=swap")
+      title MusiWork | #{title}
+      
+
+  body
+    // HEADER
+    block header
+      header.header
+        nav.nav
+          a.nav__el.nav__el--active(href='/') Home
+          a.nav__el(href='/studio') Features
+          a.nav__el(href='/about') About 
+        .header__logo
+          img(src='/img/logo.svg' alt='ArtWorks logo')
+        nav.nav.nav--user
+          if user
+            a.nav__el.nav__el--logout Log out
+            a.nav__el(href='/me')
+              img.nav__user-img(src=`/img/users/${user.photo}` alt=`Photo of ${user.name}`)
+              span= user.name.split(' ')[0]
+          else
+            a.nav__el.nav__el--ctas(href='/login') Log in
+            a.nav__el.nav__el--cta(href='/signup') Sign up
+
+    // CONTENT
+    block content
+
+
+    // FOOTER
+    include _footer
+    
+    script(src='https://js.stripe.com/v3/')
+    script(src='/js/bundle.js')
