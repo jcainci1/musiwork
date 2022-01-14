@@ -13,6 +13,7 @@ router.get(
   authController.isLoggedIn,
   viewsController.getStudio
 );
+
 router.get('/login', authController.isLoggedIn, viewsController.getLoginForm);
 router.get('/signup', viewsController.getSignupForm);
 router.get('/me', authController.protect, viewsController.getAccount);
