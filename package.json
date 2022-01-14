@@ -4,14 +4,7 @@
   "description": "A virtual music studio for students to learn and refine their craft.",
   "main": "app.js",
   "scripts": {
-    "watch:sass": "node-sass Sass/main.scss public/css/main.css -w",
-    "compile:sass": "node-sass Sass/main.scss public/css/main.css -w",
-    "concat:css": "concat -o public/css/main.concat.css css/icon-font.css public/css/main.comp.css",
-    "prefix:css": "postcss --use autoprefixer -b 'last 10 versions' public/css/main.concat.css -o public/css/main.prefix.css",
-    "compress:css": "node-sass public/css/main.prefix.css public/css/main.css --output-style compressed",
-    "build:css": "npm-run-all compile:sass concat:css prefix:css compress:css",
     "dev": "nodemon server.js",
-    "start:prod": "nodemon server.js",
     "start": "node server.js",
     "debug": "ndb server.js",
     "watch:js": "parcel watch ./public/js/index.js --public-url /js --out-dir ./public/js --out-file bundle.js",
@@ -38,7 +31,6 @@
     "mongoose": "^5.13.14",
     "morgan": "^1.9.1",
     "multer": "^1.4.1",
-    "node-sass": "^7.0.1",
     "nodemailer": "^6.1.1",
     "pug": "^2.0.3",
     "sharp": "^0.23.2",
@@ -60,6 +52,6 @@
     "prettier": "^1.17.0"
   },
   "engines": {
-    "node": "10.0.0"
+    "node": "14.15.4"
   }
 }
