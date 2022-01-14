@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.use(viewsController.alerts);
 
-router.get('/studio', authController.isLoggedIn, viewsController.getOverview);
+router.get('/', authController.isLoggedIn, viewsController.getOverview);
 
 router.get(
   '/studio/:slug',
