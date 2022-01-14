@@ -4,7 +4,6 @@
   "description": "A virtual music studio for students to learn and refine their craft.",
   "main": "app.js",
   "scripts": {
-    "start": "node server.js",
     "dev": "nodemon server.js",
     "debug": "ndb server.js",
     "watch:js": "parcel watch ./public/js/index.js --public-url /js --out-dir ./public/js --out-file bundle.js",
