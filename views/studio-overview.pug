@@ -9,7 +9,7 @@ block content
                         .card__picture
                             .card__picture-overlay &nbsp;
                             img.card__picture-img(src=`/img/studio/${studio.imageCover}`, alt=`${studio.courseName}`)
-                        h3.heading-tertirary
+                        h3.heading-tertirary.card__header-name
                             span= studio.courseName
 
                     .card__details
@@ -43,4 +43,4 @@ block content
                             span.card__footer-value= studio.ratingsAverage 
                             |
                             span.card__footer-text= ` rating (${studio.ratingsQuantity})`
-                        a.btn.btn--blue.btn--small(href=`/studio/${studio.slug}`) Details
+                        a.btn.btn--blue.btn--small.card__footer-btn(href=`/studio/${studio.slug}`) Details

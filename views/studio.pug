@@ -38,7 +38,11 @@ block content
                     .overview-box__group
                         h2.heading-secondary.ma-bt-lg Overview
                         +overviewBox("Frequency", studio.courseFrequency, "calendar")
-                        +overviewBox("Duration", studio.courseDuration, "clock")
+                        .overview-box__detail
+                            svg.overview-box__icon
+                                use(xlink:href="/img/icons/icon.svg#clock")
+                            span.overview-box__label Duration
+                            span.overview-box__text= `${studio.courseDuration}-minutes`
                         +overviewBox("Level", studio.difficulty, "icon-trending-up")
                         if (studio.virtual)
                             +overviewBox("Location", "Virtual", "location")
@@ -51,7 +55,8 @@ block content
                 else 
                     h2.heading-secondary.ma-bt-lg Instructor
                 each instructor in studio.instructor
-                    +instructorBox(instructor.photo, instructor.name)
+                    +instructorBox(instructor.photo, instructor.name.split(' ')[0])
+                    
 
         .description-box
             h2.heading-secondary.ma-bt-lg.description__header= `About ${studio.courseName}` 
