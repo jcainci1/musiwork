@@ -1,5 +1,5 @@
 {
-  "name": "art-works",
+  "name": "musiwork",
   "version": "1.0.0",
   "description": "A virtual music studio for students to learn and refine their craft.",
   "main": "app.js",
@@ -53,5 +53,9 @@
   },
   "engines": {
     "node": "14.15.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://shrouded-springs-65459.herokuapp.com/"
   }
 }
