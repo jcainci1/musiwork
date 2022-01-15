@@ -27,9 +27,7 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
         name: `${studio.courseName} Studio`,
         description: studio.summary,
         images: [
-          `${req.protocol}://${req.get('host')}/img/studios/${
-            studio.imageCover
-          }`
+          `${req.protocol}://${req.get('host')}/img/studio/${studio.imageCover}`
         ],
         amount: studio.price * 100,
         currency: 'usd',

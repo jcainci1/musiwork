@@ -12,7 +12,7 @@ export const signup = async data => {
     if (res.data.status === 'success') {
       showAlert('success', 'Registered successfully!');
       window.setTimeout(() => {
-        location.assign('/me');
+        location.assign('/');
       }, 1500);
     }
   } catch (err) {
