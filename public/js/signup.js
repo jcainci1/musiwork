@@ -12,7 +12,7 @@ export const signup = async data => {
     if (res.data.status === 'success') {
       showAlert('success', 'Registered successfully!');
       window.setTimeout(() => {
-        location.assign('/studio');
+        location.assign('/me');
       }, 1500);
     }
   } catch (err) {
