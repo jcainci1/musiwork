@@ -40,6 +40,13 @@ app.use(cors());
 app.options('*', cors());
 // app.options('/api/v1/tours/:id', cors());
 
+//Helmet security pass through
+app.use(
+  helmet({
+    contentSecurityPolicy: false
+  })
+);
+
 // Serving static files
 app.use(express.static(path.join(__dirname, 'public')));
 
