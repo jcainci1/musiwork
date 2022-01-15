@@ -43,11 +43,18 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
   });
 });
 
+// const createBookingCheckout = async session => {
+//   const studio = session.client_reference_id;
+//   const user = (await User.findOne({ email: session.customer_email })).id;
+//   const price = session.display_items[0].amount / 100;
+//   await Booking.create({ studio, user, price });
+// };
+
 const createBookingCheckout = async session => {
-  const studio = session.client_reference_id;
+  const tour = session.client_reference_id;
   const user = (await User.findOne({ email: session.customer_email })).id;
-  const price = session.display_items[0].amount / 100;
-  await Booking.create({ studio, user, price });
+  const price = session.amount_total / 100;
+  await Booking.create({ tour, user, price });
 };
 
 exports.webhookCheckout = (req, res, next) => {
