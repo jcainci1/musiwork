@@ -37,7 +37,7 @@ exports.resizeStudioImages = catchAsync(async (req, res, next) => {
     .resize(2000, 1333)
     .toFormat('jpeg')
     .jpeg({ quality: 90 })
-    .toFile(`public/img/studios/${req.body.imageCover}`);
+    .toFile(`public/img/studio/${req.body.imageCover}`);
 
   // 2) Images
   req.body.images = [];
@@ -50,7 +50,7 @@ exports.resizeStudioImages = catchAsync(async (req, res, next) => {
         .resize(2000, 1333)
         .toFormat('jpeg')
         .jpeg({ quality: 90 })
-        .toFile(`public/img/studios/${filename}`);
+        .toFile(`public/img/studio/${filename}`);
 
       req.body.images.push(filename);
     })

@@ -2,8 +2,8 @@ const mongoose = require('mongoose');
 const slugify = require('slugify');
 
 // const slugify = require('slugify');
-// const User = require('./userModel');
-// const validator = require('validator');
+const User = require('./userModel');
+const validator = require('validator');
 
 const courseSchema = new mongoose.Schema(
   {
