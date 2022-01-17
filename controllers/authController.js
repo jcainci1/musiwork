@@ -13,7 +13,7 @@ const signToken = id => {
 };
 
 const createSendToken = (user, statusCode, req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
   const token = signToken(user._id);
 
   res.cookie('jwt', token, {
@@ -37,50 +37,56 @@ const createSendToken = (user, statusCode, req, res) => {
 };
 
 // exports.signup = catchAsync(async (req, res, next) => {
-//   const newUser = await User.create(req.body);
+//   const newUser = await User.create({
+//     name: req.body.name,
+//     email: req.body.email,
+//     password: req.body.password,
+//     passwordConfirm: req.body.passwordConfirm
+//   });
+
 //   const url = `${req.protocol}://${req.get('host')}/me`;
-//   console.log(url);
-//   await new Email(newUser, url).sendWelcome();
+//   // console.log(url);
+//   // await new Email(newUser, url).sendWelcome();
+
 //   createSendToken(newUser, 201, req, res);
 // });
 
-exports.signup = catchAsync(async (req, res, next) => {
-  const newUser = await User.create({
-    name: req.body.name,
-    email: req.body.email,
-    password: req.body.password,
-    passwordConfirm: req.body.passwordConfirm
-  });
+exports.login = catchAsync(async (req, res, next) => {
+  // 3) If everything ok, send token to client
+
+  const newUser = await User.create(req.body);
 
   const url = `${req.protocol}://${req.get('host')}/me`;
-  // console.log(url);
+  console.log(url);
   await new Email(newUser, url).sendWelcome();
 
-  createSendToken(newUser, 201, req, res);
+  createSendToken(user, 200, req, res);
 });
 
-exports.login = catchAsync(async (req, res, next) => {
-  const { email, password } = req.body;
-  // console.log([req.body]);
-  // 1) Check if email and password exist
-  if (!email || !password) {
-    return next(new AppError('Please provide email and password!', 400));
-  }
-  // 2) Check if user exists && password is correct
+exports.signup = catchAsync(async (req, res, next) => {
+  const { email, password } = {
+    email: req.body.email,
+    password: req.body.password
+  };
+
+  const newUser = await User.create(req.body);
+
+  const url = `${req.protocol}://${req.get('host')}/me`;
+  console.log(url);
+  // await new Email(newUser, url).sendWelcome();
   const user = await User.findOne({ email }).select('+password');
 
   if (!user || !(await user.correctPassword(password, user.password))) {
     return next(new AppError('Incorrect email or password', 401));
   }
-
-  // 3) If everything ok, send token to client
-  createSendToken(user, 200, req, res);
+  createSendToken(user, 201, req, res);
 });
 
 exports.logout = (req, res) => {
   res.cookie('jwt', 'loggedout', {
     expires: new Date(Date.now() + 10 * 1000),
-    httpOnly: true
+    httpOnly: true,
+    secure: req.secure || req.headers['x-forwarded-proto'] === 'https'
   });
   res.status(200).json({ status: 'success' });
 };
