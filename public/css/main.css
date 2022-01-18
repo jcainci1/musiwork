@@ -1230,9 +1230,11 @@ body {
       margin-bottom: 15rem; } }
   @media only screen and (max-width: 37.5em) {
     .heading-type {
+      font-size: 1.2rem;
       margin-bottom: 17rem; } }
   @media only screen and (max-width: 32.1875em) {
     .heading-type {
+      font-size: 1rem;
       margin-bottom: 20rem; } }
 
 .heading-secondary {
@@ -1313,11 +1315,18 @@ body {
   flex-direction: row;
   flex-wrap: wrap;
   padding: 0 0 6rem 6rem;
-  margin-right: 5rem;
-  width: 33.333%; }
+  margin-right: 5rem; }
+  @media only screen and (max-width: 32.1875em) {
+    .policy-box {
+      padding-bottom: 8rem;
+      margin-right: 0; } }
 
 .policy--text {
-  flex: 1 0 100%; }
+  flex: 1 0 100%;
+  width: 100%; }
+  @media only screen and (max-width: 32.1875em) {
+    .policy--text {
+      margin-bottom: 0; } }
 
 .description-box .description {
   margin-right: 5rem; }
@@ -1334,6 +1343,10 @@ body {
 
 .description__header {
   margin-left: 1rem; }
+  @media only screen and (max-width: 37.5em) {
+    .description__header {
+      font-weight: 500;
+      font-size: 1.5rem; } }
 
 .description__long--text {
   font-size: 1.7rem;
@@ -1352,8 +1365,7 @@ body {
   .overview-box__group {
     justify-self: center;
     justify-content: center;
-    justify-items: center;
-    padding: 4rem; } }
+    justify-items: center; } }
 
 @media only screen and (max-width: 32.1875em) {
   .overview-box__group--heading {
@@ -1404,6 +1416,7 @@ body {
   @media only screen and (max-width: 46.875em) {
     .btn--instructor {
       max-width: 70%;
+      margin-bottom: 1rem;
       padding: 0.75rem 1.25rem; } }
   @media only screen and (max-width: 32.1875em) {
     .btn--instructor {
@@ -1433,8 +1446,9 @@ body {
       width: 40rem;
       padding-left: 2rem;
       padding-right: 2rem;
-      padding-bottom: 4rem;
-      margin: 0 auto; } }
+      padding-bottom: 2rem;
+      margin: 0 auto;
+      max-width: 70%; } }
   .overview-box__detail--instructor svg {
     margin-right: 1.25rem; }
   .overview-box__detail--instructor:not(:last-child) {
@@ -1649,6 +1663,9 @@ body {
   border-radius: 2rem;
   -webkit-box-shadow: 0 3rem 8rem 0.5rem rgba(0, 0, 0, 0.15);
   box-shadow: 0 3rem 8rem 0.5rem rgba(0, 0, 0, 0.15); }
+  @media only screen and (max-width: 37.5em) {
+    .cta {
+      padding: 2rem 2rem 2rem 21rem; } }
 
 .cta__img {
   height: 15rem;
@@ -1660,6 +1677,10 @@ body {
   border-radius: 50%;
   -webkit-box-shadow: 1rem 0.5rem 3rem rgba(0, 0, 0, 0.15);
   box-shadow: 1rem 0.5rem 3rem rgba(0, 0, 0, 0.15); }
+  @media only screen and (max-width: 37.5em) {
+    .cta__img {
+      height: 12rem;
+      width: 12rem; } }
 
 .cta__img--logo {
   padding: 2rem;
@@ -1677,6 +1698,10 @@ body {
   z-index: 10;
   -webkit-transform: translate(-35%, -50%);
   transform: translate(-35%, -50%); }
+  @media only screen and (max-width: 37.5em) {
+    .cta__img--logo {
+      -webkit-transform: translate(-100%, -50%);
+      transform: translate(-100%, -50%); } }
 
 .cta__img--logo img {
   width: 100%; }
@@ -1685,11 +1710,19 @@ body {
   -webkit-transform: translate(-10%, -50%) scale(0.97);
   transform: translate(-10%, -50%) scale(0.97);
   z-index: 9; }
+  @media only screen and (max-width: 37.5em) {
+    .cta__img--1 {
+      -webkit-transform: translate(-85%, -50%);
+      transform: translate(-85%, -50%); } }
 
 .cta__img--2 {
   -webkit-transform: translate(15%, -50%) scale(0.94);
   transform: translate(15%, -50%) scale(0.94);
   z-index: 8; }
+  @media only screen and (max-width: 37.5em) {
+    .cta__img--2 {
+      -webkit-transform: translate(-70%, -50%);
+      transform: translate(-70%, -50%); } }
 
 .cta__content {
   display: grid;
@@ -1701,6 +1734,13 @@ body {
   -webkit-box-align: center;
   -ms-flex-align: center;
   align-items: center; }
+  @media only screen and (max-width: 37.5em) {
+    .cta__content {
+      margin-left: 0; } }
+  .cta__content h2 {
+    font-size: 1.4rem; }
+  .cta__content p {
+    font-size: 1.1rem; }
 
 .cta__text {
   font-size: 1.9rem;
@@ -1709,6 +1749,15 @@ body {
 .btn__cta {
   margin-top: 1rem;
   margin-left: 8rem; }
+  @media only screen and (max-width: 32.1875em) {
+    .btn__cta {
+      padding: 0.75rem 1.5rem;
+      font-size: 1.2rem; } }
+
+@media only screen and (max-width: 32.1875em) {
+  .btn-policy {
+    padding: 0.75rem 1.5rem;
+    font-size: 1.2rem; } }
 
 .login-form {
   margin: 0 auto;
