@@ -23,6 +23,7 @@ html
             li.navigation__item
               a.nav__el.navigation__link(href='/') All studios
             if user
+              li.navigation__item--line.line &nbsp;
               li.navigation__item.nav__el.nav__el--ctas.cta-tab
                 a.nav__el(href='/me')
                   img.nav__user-img(src=`/img/users/${user.photo}` alt=`Photo of ${user.name}`)
