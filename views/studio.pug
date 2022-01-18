@@ -51,9 +51,9 @@ block content
                         +overviewBox('Rating', `${studio.ratingsAverage} / 5`, 'icon-star')
             .overview-box__group
                 if (studio.instructor.length <= 2)
-                    h2.heading-secondary.ma-bt-lg Instructors
+                    h2.heading-secondary.ma-bt-lg.overview-box__group--heading Instructors
                 else 
-                    h2.heading-secondary.ma-bt-lg Instructor
+                    h2.heading-secondary.ma-bt-lg.overview-box__group--heading Instructor
                 each instructor in studio.instructor
                     +instructorBox(instructor.photo, instructor.name.split(' ')[0])
                     
