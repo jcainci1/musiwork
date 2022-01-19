@@ -1216,6 +1216,7 @@ body {
   -webkit-transform: translate(0, 10rem);
   transform: translate(0, 10rem);
   width: 100%;
+  z-index: 10;
   white-space: nowrap;
   z-index: 10;
   display: flex;
@@ -1520,8 +1521,7 @@ body {
   clip-path: polygon(0 9vw, 100% 0, 100% calc(100% - 9vw), 0 100%);
   -webkit-clip-path: polygon(0 9vw, 100% 0, 100% calc(100% - 9vw), 0 100%);
   margin-top: -18vh;
-  position: relative;
-  z-index: 1000; }
+  position: relative; }
   @media only screen and (max-width: 37.5em) {
     .section-pictures {
       margin-top: -8vh; } }
@@ -1575,7 +1575,6 @@ body {
   margin-top: calc(0px - 9vw);
   padding: calc(5rem + 9vw) 0;
   position: relative;
-  z-index: 1000;
   background: -webkit-gradient(linear, left top, right bottom, from(#f7f7f7), to(#eee));
   background: linear-gradient(to right bottom, #f7f7f7, #eee);
   clip-path: polygon(0 9vw, 100% 0, 100% calc(100% - 9vw), 0 100%);
