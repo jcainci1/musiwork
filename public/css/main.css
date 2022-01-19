@@ -1116,7 +1116,7 @@ body {
   -webkit-clip-path: polygon(0 0, 100% 0, 100% calc(100% - 9vw), 0 100%); }
   @media only screen and (max-width: 37.5em) {
     .section-header {
-      height: 41vw; } }
+      height: 44vw; } }
 
 .header__hero {
   height: 100%; }
@@ -1234,7 +1234,7 @@ body {
   @media only screen and (max-width: 37.5em) {
     .heading-type {
       font-size: 1.2rem;
-      margin-bottom: 17rem; } }
+      margin-bottom: 22rem; } }
   @media only screen and (max-width: 32.1875em) {
     .heading-type {
       font-size: 1rem;
@@ -1764,6 +1764,7 @@ body {
     .btn__cta {
       width: 20rem !important;
       display: flex;
+      margin-left: 0rem;
       font-size: 1rem !important; } }
   @media only screen and (max-width: 32.1875em) {
     .btn__cta {
