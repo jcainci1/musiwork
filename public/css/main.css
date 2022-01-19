@@ -1236,7 +1236,7 @@ body {
     .heading-type {
       font-size: 1.2rem;
       margin-bottom: 0;
-      top: 1%; } }
+      top: -20%; } }
   @media only screen and (max-width: 32.1875em) {
     .heading-type {
       font-size: 1rem; } }
@@ -1768,7 +1768,8 @@ body {
       width: 20rem !important;
       display: flex;
       margin-left: 0rem;
-      font-size: 1rem !important; } }
+      font-size: 1rem !important;
+      transform: translateX(-2rem); } }
   @media only screen and (max-width: 32.1875em) {
     .btn__cta {
       padding: 0.75rem 1.5rem;
