@@ -1259,6 +1259,7 @@ body {
   font-size: 2.25rem;
   text-transform: uppercase;
   font-weight: 500;
+  border-radius: 1px;
   background-image: -webkit-gradient(linear, left top, right top, from(#528fac), to(#0c6a96));
   background-image: linear-gradient(to right, #528fac, #0c6a96);
   -webkit-background-clip: text;
@@ -1287,8 +1288,9 @@ body {
   font-weight: 300;
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
-  background-image: -webkit-gradient(linear, left top, right bottom, from(rgba(0, 77, 102, 0.6)), to(rgba(3, 47, 92, 0.6)));
-  background-image: linear-gradient(to bottom right, from(rgba(0, 77, 102, 0.6)), to(rgba(3, 47, 92, 0.6))); }
+  border-radius: 1px;
+  background-image: -webkit-gradient(linear, left top, right bottom, from(rgba(0, 77, 102, 0.8)), to(rgba(3, 47, 92, 0.8)));
+  background-image: linear-gradient(to bottom right, from(rgba(0, 77, 102, 0.8)), to(rgba(3, 47, 92, 0.8))); }
   @media only screen and (max-width: 37.5em) {
     .heading-second span {
       margin-bottom: 1rem;
@@ -1803,7 +1805,7 @@ body {
       font-size: 1.2rem !important; } }
   @media only screen and (max-width: 37.5em) {
     .btn__cta {
-      margin-left: 2rem;
+      margin-left: 0rem;
       display: flex;
       justify-content: center;
       justify-self: center;
@@ -1811,7 +1813,7 @@ body {
       font-size: 1rem; } }
   @media only screen and (max-width: 32.1875em) {
     .btn__cta {
-      margin-left: -1rem;
+      margin-left: -3rem;
       padding: 0.75rem 1.5rem;
       font-size: 1.2rem;
       display: flex;
