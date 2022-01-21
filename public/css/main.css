@@ -1224,36 +1224,28 @@ body {
   filter: drop-shadow(0 0.75rem 0.5rem rgba(0, 0, 0, 0.25)); }
 
 .heading-type {
+  display: flex;
+  color: #999;
   font-size: 2.3rem;
   text-align: center;
   position: absolute;
-  -webkit-transform: translate(0, 10rem);
-  transform: translate(0, 10rem);
+  margin-bottom: 7rem;
   width: 100%;
   z-index: 20;
   white-space: nowrap;
-  z-index: 10;
-  display: flex;
   justify-content: center; }
   @media only screen and (max-width: 75em) {
     .heading-type {
-      margin-bottom: 8rem;
       font-size: 2rem; } }
   @media only screen and (max-width: 62.5em) {
     .heading-type {
-      margin-bottom: 9rem;
-      font-size: 1.4rem; } }
-  @media only screen and (max-width: 46.875em) {
-    .heading-type {
-      margin-bottom: 15rem; } }
+      font-size: 1.8rem; } }
   @media only screen and (max-width: 37.5em) {
     .heading-type {
-      font-size: 1.2rem;
-      margin-bottom: 0;
-      top: -30%; } }
+      font-size: 1.5rem; } }
   @media only screen and (max-width: 32.1875em) {
     .heading-type {
-      font-size: 1rem; } }
+      font-size: 1.4rem; } }
 
 .heading-secondary {
   font-size: 2.25rem;
@@ -1283,17 +1275,9 @@ body {
   font-size: 3.5rem; }
 
 .heading-second span {
-  padding: 1rem 1.5rem;
-  line-height: 1.3;
-  font-weight: 300;
-  -webkit-box-decoration-break: clone;
-  box-decoration-break: clone;
-  border-radius: 1px;
-  background-image: -webkit-gradient(linear, left top, right bottom, from(rgba(0, 77, 102, 0.8)), to(rgba(3, 47, 92, 0.8)));
-  background-image: linear-gradient(to bottom right, from(rgba(0, 77, 102, 0.8)), to(rgba(3, 47, 92, 0.8))); }
+  font-weight: 300; }
   @media only screen and (max-width: 37.5em) {
     .heading-second span {
-      margin-bottom: 1rem;
       font-weight: 500; } }
 
 .section-description {
@@ -1384,10 +1368,12 @@ body {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
+  padding-left: 2vw;
+  padding-right: 2vw;
   -webkit-box-pack: center;
   -ms-flex-pack: center;
   justify-content: center; }
-  @media only screen and (max-width: 37.5em) {
+  @media only screen and (max-width: 32.1875em) {
     .overview-box {
       clip-path: polygon(0 4vw, 100% 0, 100% calc(100% - 4vw), 0 100%);
       -webkit-clip-path: polygon(0 4vw, 100% 0, 100% calc(100% - 4vw), 0 100%); } }
@@ -1783,6 +1769,9 @@ body {
   @media only screen and (max-width: 37.5em) {
     .cta__content {
       margin-left: -3rem; } }
+  @media only screen and (max-width: 32.1875em) {
+    .cta__content {
+      margin-left: -6rem; } }
   @media only screen and (max-width: 37.5em) {
     .cta__content h2 {
       font-size: 1.4rem; } }
@@ -1799,31 +1788,28 @@ body {
   text-align: center;
   display: flex;
   margin: 0 auto;
-  margin-top: 2rem; }
+  margin-top: 2rem;
+  flex-wrap: nowrap !important; }
   @media only screen and (max-width: 75em) {
     .btn__cta {
       font-size: 1.2rem !important; } }
   @media only screen and (max-width: 37.5em) {
     .btn__cta {
       margin-left: 0rem;
-      display: flex;
       justify-content: center;
       justify-self: center;
       justify-items: center;
-      font-size: 1rem; } }
+      font-size: 1rem !important; } }
   @media only screen and (max-width: 32.1875em) {
     .btn__cta {
       margin-left: -3rem;
-      padding: 0.75rem 1.5rem;
-      font-size: 1.2rem;
-      display: flex;
-      flex-wrap: nowrap;
-      width: 12rem; } }
+      padding: 0.5rem 1rem;
+      flex-wrap: nowrap; } }
 
 @media only screen and (max-width: 32.1875em) {
   .btn-policy {
-    padding: 0.75rem 1.5rem;
-    font-size: 1.2rem; } }
+    padding: 1.5rem 2rem;
+    font-size: 1rem; } }
 
 .login-form {
   margin: 0 auto;

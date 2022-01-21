@@ -28,15 +28,15 @@ block content
             .heading-box
                 h1.heading-primary
                     span= studio.courseName
-                .heading-box__group
-                    .heading-type.heading-second
-                        span= `${studio.courseType} | ${studio.instrument.join(' and ')}`
 
         section.section-description
             .overview-box
                 div
                     .overview-box__group
                         h2.heading-secondary.ma-bt-lg Overview
+                        +overviewBox("Course", studio.courseType, "instructor")
+                        if (studio.instrument)
+                            +overviewBox("Instrument", studio.instrument.join(', '), "icon-music")
                         +overviewBox("Frequency", studio.courseFrequency, "calendar")
                         .overview-box__detail
                             svg.overview-box__icon
@@ -101,4 +101,4 @@ block content
                 if user
                     button.btn.btn--blue.span-all-rows.btn__cta#book-studio(data-studio-id=`${studio.id}`) Book now!
                 else
-                    a.btn.btn--blue.span-all-rows.btn__cta(href="/login") Login and book now
+                    a.btn.btn--blue.span-all-rows.btn__cta(href="/login") Book now!
