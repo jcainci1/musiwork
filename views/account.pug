@@ -20,22 +20,23 @@ html
       main.account
         .user-view
           nav.user-view__menu
-            .side-nav__logo(class='side-nav--active')
-                a(href='#')
-                  svg
-                    use(xlink:href='img/icons/logo.svg')
-                  | 
+            .side-nav__logo
+                a(href='/')
+                  img(src='/img/logo.svg' alt='MusiWork logo' href="/")
             .side-nav__item--line.line &nbsp;
             ul.side-nav
               +navItem('/my-dashboard', 'Dashboard', 'home')
               +navItem('/my-bookings', 'My bookings', 'briefcase')
+              +navItem('#', 'Billing', 'credit-card')              
               +navItem('#', 'My reviews', 'star')
             .side-nav__item--line.line &nbsp;
             ul.side-nav
               +navItem('#', 'Settings', 'settings', true)
-              +navItem('#', 'Billing', 'credit-card')
-              +navItem('#', 'Logout', 'log-out')
-
+              li#logout
+                a(href="#")
+                  svg
+                    use(xlink:href="img/icons/icon.svg#icon-log-out")
+                  | Logout
             - if (user.role === 'admin')
               .admin-nav
                 h5.admin-nav__heading Admin
@@ -84,6 +85,5 @@ html
                   input#password-confirm.form__input(type='password', placeholder='••••••••', required, minlength='8')
                 .form__group.right
                   button.btn.btn--small.btn--green.btn--save-password Save password
-    include _footer
     script(src='https://js.stripe.com/v3/')
     script(src='/js/bundle.js')
