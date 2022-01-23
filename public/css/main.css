@@ -2061,7 +2061,8 @@ body {
   @media only screen and (max-width: 37.5em) {
     .side-nav a:link,
     .side-nav a:visited {
-      font-size: 0.9rem; } }
+      font-size: 0.9rem;
+      padding: 1rem 2rem; } }
 
 .side-nav a:hover,
 .side-nav a:active {
@@ -2077,8 +2078,7 @@ body {
     .side-nav svg {
       height: 0.9rem;
       width: 0.9rem;
-      margin-right: 0rem;
-      transform: translateX(-1rem); } }
+      margin-right: 1rem; } }
 
 .admin-nav {
   margin-top: 5.5rem; }
