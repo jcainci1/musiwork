@@ -71,7 +71,7 @@ body {
 .side-nav__item--line {
   display: flex;
   margin: 6rem 0;
-  width: 80%;
+  width: 75%;
   margin: 0 auto;
   justify-content: center;
   justify-self: center;
@@ -80,9 +80,12 @@ body {
   height: 1px;
   margin-bottom: 1rem;
   background-color: #5e5e5e; }
+  @media only screen and (max-width: 46.875em) {
+    .side-nav__item--line {
+      width: 70%; } }
 
 .side-nav__item--line-bottom {
-  margin-top: auto; }
+  margin-bottom: 0; }
 
 .btn,
 .btn:link,
@@ -1941,9 +1944,6 @@ body {
   @media only screen and (max-width: 46.875em) {
     .side-nav__logo {
       margin-bottom: 2rem; } }
-  @media only screen and (max-width: 37.5em) {
-    .side-nav__logo {
-      margin-bottom: 1rem; } }
 
 .side-nav__logo img {
   display: flex;
@@ -1954,7 +1954,7 @@ body {
       height: 3rem; } }
 
 .side-nav__account {
-  margin-top: 0; }
+  margin-bottom: auto; }
 
 .user-view {
   background-color: #fff;
