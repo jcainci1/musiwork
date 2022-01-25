@@ -1975,7 +1975,7 @@ body {
   background-image: -webkit-gradient(linear, left top, right bottom, from(#333), to(#333));
   background-image: linear-gradient(to right bottom, #333, #333);
   padding: 4rem 0;
-  overflow-y: scroll;
+  overflow-y: auto;
   overflow-x: hidden;
   height: 100vh;
   flex-direction: column; }
