@@ -1977,7 +1977,7 @@ body {
   padding: 4rem 0;
   overflow-y: scroll;
   overflow-x: hidden;
-  min-height: 100vh;
+  height: 100vh;
   flex-direction: column; }
   @media only screen and (max-width: 46.875em) {
     .user-view__menu {
