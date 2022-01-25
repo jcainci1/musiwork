@@ -24,13 +24,14 @@ html
                 a(href='/')
                   img(src='/img/logo.svg' alt='MusiWork logo' href="/")
             .side-nav__item--line.line &nbsp;
-            ul.side-nav
+            ul.side-nav.side-nav__dashboard
               +navItem('/my-dashboard', 'Dashboard', 'home')
               +navItem('/my-bookings', 'Bookings', 'briefcase')
+              +navItem('/my-calendar', 'Calendar', 'calendar')
               +navItem('#', 'Billing', 'credit-card')              
               +navItem('#', 'Reviews', 'star')
-            .side-nav__item--line.line &nbsp;
-            ul.side-nav
+            .side-nav__item--line.line.side-nav__item--line-bottom &nbsp;
+            ul.side-nav.side-nav__account
               +navItem('#', 'Settings', 'settings', true)
               li#logout
                 a(href="#")
