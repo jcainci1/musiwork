@@ -13,9 +13,11 @@ mixin instructorBox(img, name)
     .overview-box__detail--instructor
         img.overview-box__detail--instructor__img(src=`/img/users/${img}`, alt='Instructor')
         span.overview-box__detail--instructor__text= name
-        span.overview-box__detail--instructor__label Instructor
-        button.btn.btn--blue.btn--instructor View bio
-        button.btn.btn--blue.btn--instructor Availability
+        .overview-box__detail--instructor__info
+            span.overview-box__detail--instructor__label Instructor
+        .overview-box__detail--instructor__btns
+            button.btn.btn--blue.btn--instructor View bio
+            button.btn.btn--blue.btn--instructor Availability
         
 
 block content
@@ -65,11 +67,11 @@ block content
             each p in parapraphs
                 p.long__description__long--text= p
 
-        .curriculum-box
+        .description-box
             h2.heading-secondary.ma-bt-lg.description__header Curriculum Overview
             p.long__description__long--text= studio.curriculumDescription
-        .policy-box 
-            h2.heading-secondary.ma-bt-lg.description__header.policy--text Studio Policy Agreement
+        .description-box
+            h2.heading-secondary.ma-bt-lg.description__header Studio Policy Agreement
             button.btn.btn--blue.btn-down.btn-policy(src=`/img/studioPol/${studio.studioPolicy}`, alt='Studio Policy Document') Download Policy
 
 
