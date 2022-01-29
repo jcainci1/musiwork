@@ -11,6 +11,7 @@ import { showAlert } from './alerts';
 const mapBox = document.getElementById('map');
 const loginForm = document.querySelector('.form--login');
 const logOutBtn = document.getElementById('logout');
+const phoneLogOutBtn = document.getElementById('phone-logout');
 const userDataForm = document.querySelector('.form-user-data');
 const userPasswordForm = document.querySelector('.form-user-password');
 const bookBtn = document.getElementById('book-studio');
@@ -31,6 +32,8 @@ if (loginForm)
   });
 
 if (logOutBtn) logOutBtn.addEventListener('click', logout);
+
+if (phoneLogOutBtn) phoneLogOutBtn.addEventListener('click', logout);
 
 if (registerForm)
   registerForm.addEventListener('submit', async e => {
