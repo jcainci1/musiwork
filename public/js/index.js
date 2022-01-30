@@ -6,6 +6,7 @@ import { signup } from './signup';
 import { updateSettings } from './updateSettings';
 import { bookStudio } from './stripe';
 import { showAlert } from './alerts';
+import { navExtend } from './accountNav';
 
 // DOM ELEMENTS
 const mapBox = document.getElementById('map');
@@ -16,6 +17,7 @@ const userDataForm = document.querySelector('.form-user-data');
 const userPasswordForm = document.querySelector('.form-user-password');
 const bookBtn = document.getElementById('book-studio');
 const registerForm = document.querySelector('.form--register');
+const sideBarHover = document.querySelector('.user-view__menu');
 
 // DELEGATION
 if (mapBox) {
@@ -34,6 +36,27 @@ if (loginForm)
 if (logOutBtn) logOutBtn.addEventListener('click', logout);
 
 if (phoneLogOutBtn) phoneLogOutBtn.addEventListener('click', logout);
+
+// if (sideBarHover)
+//   sideBarHover.addEventListener('mouseover', e => {
+//     e.preventDefault();
+//     // .side-bar__logo--favicon - take away
+//     // .side-bar__logo display flex
+//     // .side-nav span display flex
+//     // .side-nav__hide take away
+//     var sideNav = document.querySelector('.side-nav__hide svg');
+//     var logoFavicon = document.querySelector('.side-bar__logo--favicon img');
+//     var logoFull = document.querySelector('.side-bar__logo');
+//     var sideText = document.querySelector('.side-nav span');
+
+//     logoFavicon.style.height = null;
+//     logoFavicon.style.width = null;
+//     sideNav.style.height = null;
+//     sideNav.style.width = null;
+//     sideNav.style.margin = null;
+//     logoFull.style.display = 'flex';
+//     sideText.style.display = 'flex';
+//   });
 
 if (registerForm)
   registerForm.addEventListener('submit', async e => {

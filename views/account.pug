@@ -20,19 +20,20 @@ html
     block content
       main.account
         .user-view
-          nav.user-view__menu
+          nav.user-view__menu.user-view__menu--hide
             .side-nav__logo
                 a(href='/')
                   img.side-bar__logo(src='/img/logo.svg' alt='MusiWork logo' href="/")
+                  img.side-bar__logo--favicon(src='/img/logo-favicon-white.svg' alt='MusiWork logo' href="/")
             .side-nav__item--line.line &nbsp;
-            ul.side-nav.side-nav__dashboard
+            ul.side-nav.side-nav__dashboard.side-nav__hide
               +navItem('/my-dashboard', 'Dashboard', 'home')
               +navItem('/my-bookings', 'Bookings', 'briefcase')
               +navItem('/my-calendar', 'Calendar', 'calendar')
               +navItem('#', 'Billing', 'credit-card')              
               +navItem('#', 'Reviews', 'star')
             .side-nav__item--line.line.side-nav__item--line-bottom &nbsp;
-            ul.side-nav.side-nav__account
+            ul.side-nav.side-nav__account.side-nav__hide
               +navItem('#', 'Settings', 'settings', true)
               li#logout
                 a(href="#")
@@ -43,7 +44,7 @@ html
             - if (user.role === 'admin')
               .admin-nav
                 h5.admin-nav__heading Admin
-                ul.side-nav
+                ul.side-nav.side-nav__hide
                   +navItem('#', 'Manage tours', 'map')
                   +navItem('#', 'Manage users', 'users')
                   +navItem('#', 'Manage reviews', 'star')

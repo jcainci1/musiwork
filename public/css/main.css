@@ -1987,14 +1987,6 @@ body {
     .side-nav__logo {
       margin-bottom: 2rem; } }
 
-.side-nav__logo img {
-  display: flex;
-  height: 5rem;
-  margin: 0 auto; }
-  @media only screen and (max-width: 46.875em) {
-    .side-nav__logo img {
-      height: 3rem; } }
-
 .side-nav__account {
   margin-bottom: auto; }
 
@@ -2011,27 +2003,58 @@ body {
 
 .user-view__menu {
   display: flex;
-  -webkit-box-flex: 32rem;
-  -ms-flex: 32rem 0 0px;
-  flex: 32rem 0 0;
   background-image: -webkit-gradient(linear, left top, right bottom, from(#333), to(#333));
   background-image: linear-gradient(to right bottom, #333, #333);
   padding: 4rem 0;
   overflow-y: auto;
   overflow-x: hidden;
   height: 100vh;
-  flex-direction: column; }
-  @media only screen and (max-width: 46.875em) {
-    .user-view__menu {
-      -webkit-box-flex: 20rem;
-      -ms-flex: 20rem 0 0px;
-      flex: 20rem 0 0; } }
+  flex-direction: column;
+  -webkit-transition: all 0.4s;
+  transition: all 0.4s; }
+
+.user-view__menu--hide {
+  -webkit-box-flex: 10.5rem;
+  -ms-flex: 10.5rem 0 0px;
+  flex: 10.5rem 0 0; }
   @media only screen and (max-width: 37.5em) {
-    .user-view__menu {
-      -webkit-box-flex: 15rem;
-      -ms-flex: 15rem 0 0px;
-      flex: 15rem 0 0;
-      padding: 3rem 0; } }
+    .user-view__menu--hide {
+      -webkit-box-flex: 6rem;
+      -ms-flex: 6rem 0 0px;
+      flex: 6rem 0 0; } }
+  .user-view__menu--hide:hover {
+    -webkit-box-flex: 32rem;
+    -ms-flex: 32rem 0 0px;
+    flex: 32rem 0 0; }
+    @media only screen and (max-width: 46.875em) {
+      .user-view__menu--hide:hover {
+        -webkit-box-flex: 20rem;
+        -ms-flex: 20rem 0 0px;
+        flex: 20rem 0 0; } }
+    @media only screen and (max-width: 37.5em) {
+      .user-view__menu--hide:hover {
+        -webkit-box-flex: 15rem;
+        -ms-flex: 15rem 0 0px;
+        flex: 15rem 0 0;
+        padding: 3rem 0; } }
+    .user-view__menu--hide:hover .side-nav span {
+      position: relative;
+      visibility: visible;
+      margin-left: 1.5rem; }
+    .user-view__menu--hide:hover .side-bar__logo {
+      display: flex;
+      position: relative;
+      visibility: visible; }
+    .user-view__menu--hide:hover .side-nav__logo img {
+      height: 5rem;
+      margin: 0 auto; }
+      @media only screen and (max-width: 46.875em) {
+        .user-view__menu--hide:hover .side-nav__logo img {
+          height: 3rem; } }
+    .user-view__menu--hide:hover .side-bar__logo--favicon {
+      display: none;
+      position: absolute;
+      visibility: hidden; }
 
 .user-view__content {
   -webkit-box-flex: 1;
@@ -2077,6 +2100,24 @@ body {
   -webkit-transform: translateX(-3px);
   transform: translateX(-3px); }
 
+.side-nav span {
+  position: absolute;
+  visibility: hidden; }
+
+.side-bar__logo {
+  position: absolute;
+  visibility: hidden; }
+
+.side-bar__logo--favicon {
+  display: block;
+  margin: 0 auto;
+  height: 3.25rem;
+  width: 3.25rem; }
+  @media only screen and (max-width: 37.5em) {
+    .side-bar__logo--favicon {
+      height: 2.1rem;
+      width: 2.1rem; } }
+
 .side-nav a:link,
 .side-nav a:visited {
   padding: 1rem 4rem;
@@ -2118,6 +2159,16 @@ body {
       height: 0.9rem;
       width: 0.9rem;
       margin-right: 1rem; } }
+
+.side-nav__hide svg {
+  height: 2rem;
+  width: 2rem;
+  margin-right: 0rem; }
+  @media only screen and (max-width: 37.5em) {
+    .side-nav__hide svg {
+      height: 1.2rem;
+      width: 1.2rem;
+      margin-right: 0rem; } }
 
 .admin-nav {
   margin-top: 5.5rem; }
