@@ -3,7 +3,8 @@ mixin navItem(link, text, icon, active)
     a(href=`${link}`)
       svg
         use(xlink:href=`img/icons/icon.svg#icon-${icon}`)
-      | #{text}
+      span
+        | #{text}
 
 doctype html
 html
@@ -22,7 +23,7 @@ html
           nav.user-view__menu
             .side-nav__logo
                 a(href='/')
-                  img(src='/img/logo.svg' alt='MusiWork logo' href="/")
+                  img.side-bar__logo(src='/img/logo.svg' alt='MusiWork logo' href="/")
             .side-nav__item--line.line &nbsp;
             ul.side-nav.side-nav__dashboard
               +navItem('/my-dashboard', 'Dashboard', 'home')
@@ -37,7 +38,8 @@ html
                 a(href="#")
                   svg
                     use(xlink:href="img/icons/icon.svg#icon-log-out")
-                  | Logout
+                    span 
+                      | Logout
             - if (user.role === 'admin')
               .admin-nav
                 h5.admin-nav__heading Admin

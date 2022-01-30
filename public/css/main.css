@@ -254,13 +254,13 @@ body {
   margin-left: 8rem;
   text-align: center;
   display: flex;
+  left: 50%;
   white-space: nowrap;
   margin: 0 auto;
   margin-top: 2rem;
   flex-wrap: nowrap !important; }
   @media only screen and (max-width: 75em) {
     .btn__cta {
-      left: 50%;
       font-size: 1.2rem !important; } }
   @media only screen and (max-width: 37.5em) {
     .btn__cta {
@@ -269,7 +269,7 @@ body {
       font-size: 1.1rem !important; } }
   @media only screen and (max-width: 32.1875em) {
     .btn__cta {
-      left: -50%;
+      left: -20%;
       flex-wrap: nowrap; } }
 
 .btn-policy {
@@ -306,6 +306,8 @@ body {
   display: flex;
   flex-wrap: wrap;
   flex-direction: row;
+  margin-left: 3rem;
+  margin-right: 3rem;
   justify-content: space-between;
   align-content: flex-end;
   font-size: 1.2rem;
@@ -315,7 +317,9 @@ body {
   padding: 3rem; }
   @media only screen and (max-width: 32.1875em) {
     .footer {
-      justify-content: normal; } }
+      justify-content: normal;
+      margin-left: 0rem;
+      margin-right: 0rem; } }
   .footer__nav {
     display: flex;
     flex-direction: row;
@@ -1398,11 +1402,7 @@ body {
   margin-right: 5rem; }
 
 .policy-box {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  padding: 0 0 6rem 6rem;
-  margin-right: 5rem; }
+  padding: 0 0 6rem 6rem; }
   @media only screen and (max-width: 32.1875em) {
     .policy-box {
       padding-bottom: 8rem;
@@ -1740,11 +1740,16 @@ body {
   border-radius: 2rem;
   -webkit-box-shadow: 0 3rem 8rem 0.5rem rgba(0, 0, 0, 0.15);
   box-shadow: 0 3rem 8rem 0.5rem rgba(0, 0, 0, 0.15); }
+  @media only screen and (max-width: 75em) {
+    .cta {
+      transform: translateY(-6rem); } }
   @media only screen and (max-width: 46.875em) {
     .cta {
-      padding: 3rem 3rem 3rem 21rem; } }
+      padding: 3rem 3rem 3rem 21rem;
+      transform: translateY(-5rem); } }
   @media only screen and (max-width: 37.5em) {
     .cta {
+      transform: translateY(-4rem);
       padding: 2rem 2rem 2rem 21rem; } }
 
 .cta__img {
