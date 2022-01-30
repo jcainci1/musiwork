@@ -2022,36 +2022,36 @@ body {
       -webkit-box-flex: 6rem;
       -ms-flex: 6rem 0 0px;
       flex: 6rem 0 0; } }
-  .user-view__menu--hide:hover {
+  .user-view__menu--hide:hover, .user-view__menu--hide:active {
     -webkit-box-flex: 32rem;
     -ms-flex: 32rem 0 0px;
     flex: 32rem 0 0; }
     @media only screen and (max-width: 46.875em) {
-      .user-view__menu--hide:hover {
+      .user-view__menu--hide:hover, .user-view__menu--hide:active {
         -webkit-box-flex: 20rem;
         -ms-flex: 20rem 0 0px;
         flex: 20rem 0 0; } }
     @media only screen and (max-width: 37.5em) {
-      .user-view__menu--hide:hover {
+      .user-view__menu--hide:hover, .user-view__menu--hide:active {
         -webkit-box-flex: 15rem;
         -ms-flex: 15rem 0 0px;
         flex: 15rem 0 0;
         padding: 3rem 0; } }
-    .user-view__menu--hide:hover .side-nav span {
+    .user-view__menu--hide:hover .side-nav span, .user-view__menu--hide:active .side-nav span {
       position: relative;
       visibility: visible;
       margin-left: 1.5rem; }
-    .user-view__menu--hide:hover .side-bar__logo {
+    .user-view__menu--hide:hover .side-bar__logo, .user-view__menu--hide:active .side-bar__logo {
       display: flex;
       position: relative;
       visibility: visible; }
-    .user-view__menu--hide:hover .side-nav__logo img {
+    .user-view__menu--hide:hover .side-nav__logo img, .user-view__menu--hide:active .side-nav__logo img {
       height: 5rem;
       margin: 0 auto; }
       @media only screen and (max-width: 46.875em) {
-        .user-view__menu--hide:hover .side-nav__logo img {
+        .user-view__menu--hide:hover .side-nav__logo img, .user-view__menu--hide:active .side-nav__logo img {
           height: 3rem; } }
-    .user-view__menu--hide:hover .side-bar__logo--favicon {
+    .user-view__menu--hide:hover .side-bar__logo--favicon, .user-view__menu--hide:active .side-bar__logo--favicon {
       display: none;
       position: absolute;
       visibility: hidden; }
