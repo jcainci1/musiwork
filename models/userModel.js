@@ -25,7 +25,16 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['user', 'admin', 'instructor', 'owner', 'student'],
+    enum: [
+      'user',
+      'admin',
+      'lead-admin',
+      'instructor-standard',
+      'instructor-flex',
+      'instructor-principal',
+      'owner',
+      'student'
+    ],
     default: 'user'
   },
   password: {
@@ -33,6 +42,16 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Please provide a password'],
     minlength: 8,
     select: false
+  },
+  date_of_birth: Date,
+  sponsored_account: Boolean,
+  sponsor: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'User'
+  },
+  registraration: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Registration'
   },
   passwordConfirm: {
     type: String,

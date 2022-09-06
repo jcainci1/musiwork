@@ -1,11 +1,3 @@
-mixin navItem(link, text, icon, active)
-  li(class=`${active ? 'side-nav--active' : ''}`)
-    a(href=`${link}`)
-      svg
-        use(xlink:href=`img/icons/icon.svg#icon-${icon}`)
-      span
-        | #{text}
-
 doctype html
 html
   head
@@ -17,77 +9,11 @@ html
       link(rel='stylesheet' href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800&display=swap")
       title MusiWork | #{title}
   body
-    block content
-      main.account
-        .user-view
-          nav.user-view__menu.user-view__menu--hide
-            .side-nav__logo
-                a(href='/')
-                  img.side-bar__logo(src='/img/logo.svg' alt='MusiWork logo' href="/")
-                  img.side-bar__logo--favicon(src='/img/logo-favicon-white.svg' alt='MusiWork logo' href="/")
-            .side-nav__item--line.line &nbsp;
-            ul.side-nav.side-nav__dashboard.side-nav__hide
-              +navItem('/my-dashboard', 'Dashboard', 'home')
-              +navItem('/my-bookings', 'Bookings', 'briefcase')
-              +navItem('/my-calendar', 'Calendar', 'calendar')
-              +navItem('#', 'Billing', 'credit-card')              
-              +navItem('#', 'Reviews', 'star')
-            .side-nav__item--line.line.side-nav__item--line-bottom &nbsp;
-            ul.side-nav.side-nav__account.side-nav__hide
-              +navItem('#', 'Settings', 'settings', true)
-              li#logout
-                a(href="#")
-                  svg
-                    use(xlink:href="img/icons/icon.svg#icon-log-out")
-                    span 
-                      | Logout
-            - if (user.role === 'admin')
-              .admin-nav
-                h5.admin-nav__heading Admin
-                ul.side-nav.side-nav__hide
-                  +navItem('#', 'Manage tours', 'map')
-                  +navItem('#', 'Manage users', 'users')
-                  +navItem('#', 'Manage reviews', 'star')
-                  +navItem('#', 'Manage bookings', 'briefcase')
-
-          .user-view__content
-            .user-view__form-container
-              h2.heading-secondary.ma-bt-md Account settings
-              
-              //- WITHOUT API
-              //- form.form.form-user-data(action='/submit-user-data' method='POST' enctype='multipart/form-data')
-              
-              //- WITH API
-              form.form.form-user-data
-                .form__group
-                  label.form__label(for='name') Name
-                  input#name.form__input(type='text', value=`${user.name}`, required, name='name')
-                .form__group.ma-bt-md
-                  label.form__label(for='email') Email address
-                  input#email.form__input(type='email', value=`${user.email}`, required, name='email')
-                .form__group.form__photo-upload
-                  img.form__user-photo(src=`/img/users/${user.photo}`, alt='User photo')
-                  input.form__upload(type='file', accept='image/*', id='photo', name='photo')
-                  label(for='photo') Choose new photo
-                  
-                .form__group.right
-                  button.btn.btn--small.btn--green Save settings
-                  
-            .line &nbsp;
-            
-            .user-view__form-container
-              h2.heading-secondary.ma-bt-md Password change
-              form.form.form-user-password
-                .form__group
-                  label.form__label(for='password-current') Current password
-                  input#password-current.form__input(type='password', placeholder='••••••••', required, minlength='8')
-                .form__group
-                  label.form__label(for='password') New password
-                  input#password.form__input(type='password', placeholder='••••••••', required, minlength='8')
-                .form__group.ma-bt-lg
-                  label.form__label(for='password-confirm') Confirm password
-                  input#password-confirm.form__input(type='password', placeholder='••••••••', required, minlength='8')
-                .form__group.right
-                  button.btn.btn--small.btn--green.btn--save-password Save password
+    main.account
+      .user-view
+        include _sidenav
+        block content
+        
+          
     script(src='https://js.stripe.com/v3/')
     script(src='/js/bundle.js')

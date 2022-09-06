@@ -37,8 +37,10 @@ const courseSchema = new mongoose.Schema(
     },
     courseFrequency: {
       type: String,
+      enum: ['weekly', 'bi-weekly', 'monthly', 'individual'],
       required: [true, 'A course must have a frequency']
     },
+    individual_lesson_amount: Number,
     maxGroupSize: {
       type: Number,
       required: [true, 'A tour must have a group size']
@@ -66,6 +68,7 @@ const courseSchema = new mongoose.Schema(
       type: Number,
       required: [true, 'A tour must have a price']
     },
+    default_price_per_lesson: Number,
     priceDiscount: {
       type: Number,
       validate: {
@@ -133,15 +136,18 @@ const courseSchema = new mongoose.Schema(
     recital: {
       type: Boolean
     },
+    recitals: Number,
     recitalDate: {
-      type: Date
+      type: [Date]
     },
     finalExam: Boolean,
-    finalExamDate: Date,
+    finalExam: Number,
+    finalExamDate: [Date],
+    new_course: Date,
     recitalLocation: [
       {
         type: {
-          type: String,
+          type: [String],
           default: 'Point',
           enum: ['Point']
         },
@@ -156,7 +162,8 @@ const courseSchema = new mongoose.Schema(
         type: mongoose.Schema.ObjectId,
         ref: 'User'
       }
-    ]
+    ],
+    active: Boolean
   },
   {
     toJSON: { virtuals: true },

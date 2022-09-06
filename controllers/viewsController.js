@@ -55,9 +55,21 @@ exports.getSignupForm = (req, res) => {
   });
 };
 
-exports.getAccount = (req, res) => {
-  res.status(200).render('account', {
-    title: 'Your account'
+exports.getDashboard = (req, res) => {
+  res.status(200).render('dashboard', {
+    title: 'Dashboard'
+  });
+};
+
+exports.getCalendar = (req, res) => {
+  res.status(200).render('calendar', {
+    title: 'Calendar'
+  });
+};
+
+exports.getSettings = (req, res) => {
+  res.status(200).render('settings', {
+    title: 'Settings'
   });
 };
 
@@ -74,6 +86,54 @@ exports.getMyStudios = catchAsync(async (req, res, next) => {
     studios
   });
 });
+
+exports.privateRegistration = (req, res) => {
+  res.status(200).render('registration', {
+    title: 'Private Lessons'
+  });
+};
+
+exports.getBilling = (req, res) => {
+  res.status(200).render('billing', {
+    title: 'Billing'
+  });
+};
+
+exports.getReviews = (req, res) => {
+  res.status(200).render('reviews', {
+    title: 'Reviews'
+  });
+};
+
+exports.getAllReviews = (req, res) => {
+  res.status(200).render('manageReviews', {
+    title: 'Your settings'
+  });
+};
+
+exports.getAllBookings = (req, res) => {
+  res.status(200).render('manageBookings', {
+    title: 'Your settings'
+  });
+};
+
+exports.getAllUsers = (req, res) => {
+  res.status(200).render('manageUsers', {
+    title: 'Your settings'
+  });
+};
+
+exports.getAllStudios = (req, res) => {
+  res.status(200).render('manageStudios', {
+    title: 'Your settings'
+  });
+};
+
+exports.getAllBilling = (req, res) => {
+  res.status(200).render('manageBilling', {
+    title: 'Your settings'
+  });
+};
 
 exports.updateUserData = catchAsync(async (req, res, next) => {
   const updatedUser = await User.findByIdAndUpdate(

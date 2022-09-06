@@ -8626,7 +8626,2079 @@ exports.bookStudio = bookStudio;
 // .side-bar__logo display flex
 // .side-nav span display flex
 // .side-nav__hide take away
-},{}],"index.js":[function(require,module,exports) {
+},{}],"../../node_modules/util/support/isBufferBrowser.js":[function(require,module,exports) {
+module.exports = function isBuffer(arg) {
+  return arg && typeof arg === 'object'
+    && typeof arg.copy === 'function'
+    && typeof arg.fill === 'function'
+    && typeof arg.readUInt8 === 'function';
+}
+},{}],"../../node_modules/util/node_modules/inherits/inherits_browser.js":[function(require,module,exports) {
+if (typeof Object.create === 'function') {
+  // implementation from standard node.js 'util' module
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    ctor.prototype = Object.create(superCtor.prototype, {
+      constructor: {
+        value: ctor,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+  };
+} else {
+  // old school shim for old browsers
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    var TempCtor = function () {}
+    TempCtor.prototype = superCtor.prototype
+    ctor.prototype = new TempCtor()
+    ctor.prototype.constructor = ctor
+  }
+}
+
+},{}],"../../node_modules/util/util.js":[function(require,module,exports) {
+var process = require("process");
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+var getOwnPropertyDescriptors = Object.getOwnPropertyDescriptors || function getOwnPropertyDescriptors(obj) {
+  var keys = Object.keys(obj);
+  var descriptors = {};
+
+  for (var i = 0; i < keys.length; i++) {
+    descriptors[keys[i]] = Object.getOwnPropertyDescriptor(obj, keys[i]);
+  }
+
+  return descriptors;
+};
+
+var formatRegExp = /%[sdj%]/g;
+
+exports.format = function (f) {
+  if (!isString(f)) {
+    var objects = [];
+
+    for (var i = 0; i < arguments.length; i++) {
+      objects.push(inspect(arguments[i]));
+    }
+
+    return objects.join(' ');
+  }
+
+  var i = 1;
+  var args = arguments;
+  var len = args.length;
+  var str = String(f).replace(formatRegExp, function (x) {
+    if (x === '%%') return '%';
+    if (i >= len) return x;
+
+    switch (x) {
+      case '%s':
+        return String(args[i++]);
+
+      case '%d':
+        return Number(args[i++]);
+
+      case '%j':
+        try {
+          return JSON.stringify(args[i++]);
+        } catch (_) {
+          return '[Circular]';
+        }
+
+      default:
+        return x;
+    }
+  });
+
+  for (var x = args[i]; i < len; x = args[++i]) {
+    if (isNull(x) || !isObject(x)) {
+      str += ' ' + x;
+    } else {
+      str += ' ' + inspect(x);
+    }
+  }
+
+  return str;
+}; // Mark that a method should not be used.
+// Returns a modified function which warns once by default.
+// If --no-deprecation is set, then it is a no-op.
+
+
+exports.deprecate = function (fn, msg) {
+  if (typeof process !== 'undefined' && process.noDeprecation === true) {
+    return fn;
+  } // Allow for deprecating things in the process of starting up.
+
+
+  if (typeof process === 'undefined') {
+    return function () {
+      return exports.deprecate(fn, msg).apply(this, arguments);
+    };
+  }
+
+  var warned = false;
+
+  function deprecated() {
+    if (!warned) {
+      if (process.throwDeprecation) {
+        throw new Error(msg);
+      } else if (process.traceDeprecation) {
+        console.trace(msg);
+      } else {
+        console.error(msg);
+      }
+
+      warned = true;
+    }
+
+    return fn.apply(this, arguments);
+  }
+
+  return deprecated;
+};
+
+var debugs = {};
+var debugEnviron;
+
+exports.debuglog = function (set) {
+  if (isUndefined(debugEnviron)) debugEnviron = undefined || '';
+  set = set.toUpperCase();
+
+  if (!debugs[set]) {
+    if (new RegExp('\\b' + set + '\\b', 'i').test(debugEnviron)) {
+      var pid = process.pid;
+
+      debugs[set] = function () {
+        var msg = exports.format.apply(exports, arguments);
+        console.error('%s %d: %s', set, pid, msg);
+      };
+    } else {
+      debugs[set] = function () {};
+    }
+  }
+
+  return debugs[set];
+};
+/**
+ * Echos the value of a value. Trys to print the value out
+ * in the best way possible given the different types.
+ *
+ * @param {Object} obj The object to print out.
+ * @param {Object} opts Optional options object that alters the output.
+ */
+
+/* legacy: obj, showHidden, depth, colors*/
+
+
+function inspect(obj, opts) {
+  // default options
+  var ctx = {
+    seen: [],
+    stylize: stylizeNoColor
+  }; // legacy...
+
+  if (arguments.length >= 3) ctx.depth = arguments[2];
+  if (arguments.length >= 4) ctx.colors = arguments[3];
+
+  if (isBoolean(opts)) {
+    // legacy...
+    ctx.showHidden = opts;
+  } else if (opts) {
+    // got an "options" object
+    exports._extend(ctx, opts);
+  } // set default options
+
+
+  if (isUndefined(ctx.showHidden)) ctx.showHidden = false;
+  if (isUndefined(ctx.depth)) ctx.depth = 2;
+  if (isUndefined(ctx.colors)) ctx.colors = false;
+  if (isUndefined(ctx.customInspect)) ctx.customInspect = true;
+  if (ctx.colors) ctx.stylize = stylizeWithColor;
+  return formatValue(ctx, obj, ctx.depth);
+}
+
+exports.inspect = inspect; // http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
+
+inspect.colors = {
+  'bold': [1, 22],
+  'italic': [3, 23],
+  'underline': [4, 24],
+  'inverse': [7, 27],
+  'white': [37, 39],
+  'grey': [90, 39],
+  'black': [30, 39],
+  'blue': [34, 39],
+  'cyan': [36, 39],
+  'green': [32, 39],
+  'magenta': [35, 39],
+  'red': [31, 39],
+  'yellow': [33, 39]
+}; // Don't use 'blue' not visible on cmd.exe
+
+inspect.styles = {
+  'special': 'cyan',
+  'number': 'yellow',
+  'boolean': 'yellow',
+  'undefined': 'grey',
+  'null': 'bold',
+  'string': 'green',
+  'date': 'magenta',
+  // "name": intentionally not styling
+  'regexp': 'red'
+};
+
+function stylizeWithColor(str, styleType) {
+  var style = inspect.styles[styleType];
+
+  if (style) {
+    return '\u001b[' + inspect.colors[style][0] + 'm' + str + '\u001b[' + inspect.colors[style][1] + 'm';
+  } else {
+    return str;
+  }
+}
+
+function stylizeNoColor(str, styleType) {
+  return str;
+}
+
+function arrayToHash(array) {
+  var hash = {};
+  array.forEach(function (val, idx) {
+    hash[val] = true;
+  });
+  return hash;
+}
+
+function formatValue(ctx, value, recurseTimes) {
+  // Provide a hook for user-specified inspect functions.
+  // Check that value is an object with an inspect function on it
+  if (ctx.customInspect && value && isFunction(value.inspect) && // Filter out the util module, it's inspect function is special
+  value.inspect !== exports.inspect && // Also filter out any prototype objects using the circular check.
+  !(value.constructor && value.constructor.prototype === value)) {
+    var ret = value.inspect(recurseTimes, ctx);
+
+    if (!isString(ret)) {
+      ret = formatValue(ctx, ret, recurseTimes);
+    }
+
+    return ret;
+  } // Primitive types cannot have properties
+
+
+  var primitive = formatPrimitive(ctx, value);
+
+  if (primitive) {
+    return primitive;
+  } // Look up the keys of the object.
+
+
+  var keys = Object.keys(value);
+  var visibleKeys = arrayToHash(keys);
+
+  if (ctx.showHidden) {
+    keys = Object.getOwnPropertyNames(value);
+  } // IE doesn't make error fields non-enumerable
+  // http://msdn.microsoft.com/en-us/library/ie/dww52sbt(v=vs.94).aspx
+
+
+  if (isError(value) && (keys.indexOf('message') >= 0 || keys.indexOf('description') >= 0)) {
+    return formatError(value);
+  } // Some type of object without properties can be shortcutted.
+
+
+  if (keys.length === 0) {
+    if (isFunction(value)) {
+      var name = value.name ? ': ' + value.name : '';
+      return ctx.stylize('[Function' + name + ']', 'special');
+    }
+
+    if (isRegExp(value)) {
+      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
+    }
+
+    if (isDate(value)) {
+      return ctx.stylize(Date.prototype.toString.call(value), 'date');
+    }
+
+    if (isError(value)) {
+      return formatError(value);
+    }
+  }
+
+  var base = '',
+      array = false,
+      braces = ['{', '}']; // Make Array say that they are Array
+
+  if (isArray(value)) {
+    array = true;
+    braces = ['[', ']'];
+  } // Make functions say that they are functions
+
+
+  if (isFunction(value)) {
+    var n = value.name ? ': ' + value.name : '';
+    base = ' [Function' + n + ']';
+  } // Make RegExps say that they are RegExps
+
+
+  if (isRegExp(value)) {
+    base = ' ' + RegExp.prototype.toString.call(value);
+  } // Make dates with properties first say the date
+
+
+  if (isDate(value)) {
+    base = ' ' + Date.prototype.toUTCString.call(value);
+  } // Make error with message first say the error
+
+
+  if (isError(value)) {
+    base = ' ' + formatError(value);
+  }
+
+  if (keys.length === 0 && (!array || value.length == 0)) {
+    return braces[0] + base + braces[1];
+  }
+
+  if (recurseTimes < 0) {
+    if (isRegExp(value)) {
+      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
+    } else {
+      return ctx.stylize('[Object]', 'special');
+    }
+  }
+
+  ctx.seen.push(value);
+  var output;
+
+  if (array) {
+    output = formatArray(ctx, value, recurseTimes, visibleKeys, keys);
+  } else {
+    output = keys.map(function (key) {
+      return formatProperty(ctx, value, recurseTimes, visibleKeys, key, array);
+    });
+  }
+
+  ctx.seen.pop();
+  return reduceToSingleString(output, base, braces);
+}
+
+function formatPrimitive(ctx, value) {
+  if (isUndefined(value)) return ctx.stylize('undefined', 'undefined');
+
+  if (isString(value)) {
+    var simple = '\'' + JSON.stringify(value).replace(/^"|"$/g, '').replace(/'/g, "\\'").replace(/\\"/g, '"') + '\'';
+    return ctx.stylize(simple, 'string');
+  }
+
+  if (isNumber(value)) return ctx.stylize('' + value, 'number');
+  if (isBoolean(value)) return ctx.stylize('' + value, 'boolean'); // For some reason typeof null is "object", so special case here.
+
+  if (isNull(value)) return ctx.stylize('null', 'null');
+}
+
+function formatError(value) {
+  return '[' + Error.prototype.toString.call(value) + ']';
+}
+
+function formatArray(ctx, value, recurseTimes, visibleKeys, keys) {
+  var output = [];
+
+  for (var i = 0, l = value.length; i < l; ++i) {
+    if (hasOwnProperty(value, String(i))) {
+      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys, String(i), true));
+    } else {
+      output.push('');
+    }
+  }
+
+  keys.forEach(function (key) {
+    if (!key.match(/^\d+$/)) {
+      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys, key, true));
+    }
+  });
+  return output;
+}
+
+function formatProperty(ctx, value, recurseTimes, visibleKeys, key, array) {
+  var name, str, desc;
+  desc = Object.getOwnPropertyDescriptor(value, key) || {
+    value: value[key]
+  };
+
+  if (desc.get) {
+    if (desc.set) {
+      str = ctx.stylize('[Getter/Setter]', 'special');
+    } else {
+      str = ctx.stylize('[Getter]', 'special');
+    }
+  } else {
+    if (desc.set) {
+      str = ctx.stylize('[Setter]', 'special');
+    }
+  }
+
+  if (!hasOwnProperty(visibleKeys, key)) {
+    name = '[' + key + ']';
+  }
+
+  if (!str) {
+    if (ctx.seen.indexOf(desc.value) < 0) {
+      if (isNull(recurseTimes)) {
+        str = formatValue(ctx, desc.value, null);
+      } else {
+        str = formatValue(ctx, desc.value, recurseTimes - 1);
+      }
+
+      if (str.indexOf('\n') > -1) {
+        if (array) {
+          str = str.split('\n').map(function (line) {
+            return '  ' + line;
+          }).join('\n').substr(2);
+        } else {
+          str = '\n' + str.split('\n').map(function (line) {
+            return '   ' + line;
+          }).join('\n');
+        }
+      }
+    } else {
+      str = ctx.stylize('[Circular]', 'special');
+    }
+  }
+
+  if (isUndefined(name)) {
+    if (array && key.match(/^\d+$/)) {
+      return str;
+    }
+
+    name = JSON.stringify('' + key);
+
+    if (name.match(/^"([a-zA-Z_][a-zA-Z_0-9]*)"$/)) {
+      name = name.substr(1, name.length - 2);
+      name = ctx.stylize(name, 'name');
+    } else {
+      name = name.replace(/'/g, "\\'").replace(/\\"/g, '"').replace(/(^"|"$)/g, "'");
+      name = ctx.stylize(name, 'string');
+    }
+  }
+
+  return name + ': ' + str;
+}
+
+function reduceToSingleString(output, base, braces) {
+  var numLinesEst = 0;
+  var length = output.reduce(function (prev, cur) {
+    numLinesEst++;
+    if (cur.indexOf('\n') >= 0) numLinesEst++;
+    return prev + cur.replace(/\u001b\[\d\d?m/g, '').length + 1;
+  }, 0);
+
+  if (length > 60) {
+    return braces[0] + (base === '' ? '' : base + '\n ') + ' ' + output.join(',\n  ') + ' ' + braces[1];
+  }
+
+  return braces[0] + base + ' ' + output.join(', ') + ' ' + braces[1];
+} // NOTE: These type checking functions intentionally don't use `instanceof`
+// because it is fragile and can be easily faked with `Object.create()`.
+
+
+function isArray(ar) {
+  return Array.isArray(ar);
+}
+
+exports.isArray = isArray;
+
+function isBoolean(arg) {
+  return typeof arg === 'boolean';
+}
+
+exports.isBoolean = isBoolean;
+
+function isNull(arg) {
+  return arg === null;
+}
+
+exports.isNull = isNull;
+
+function isNullOrUndefined(arg) {
+  return arg == null;
+}
+
+exports.isNullOrUndefined = isNullOrUndefined;
+
+function isNumber(arg) {
+  return typeof arg === 'number';
+}
+
+exports.isNumber = isNumber;
+
+function isString(arg) {
+  return typeof arg === 'string';
+}
+
+exports.isString = isString;
+
+function isSymbol(arg) {
+  return typeof arg === 'symbol';
+}
+
+exports.isSymbol = isSymbol;
+
+function isUndefined(arg) {
+  return arg === void 0;
+}
+
+exports.isUndefined = isUndefined;
+
+function isRegExp(re) {
+  return isObject(re) && objectToString(re) === '[object RegExp]';
+}
+
+exports.isRegExp = isRegExp;
+
+function isObject(arg) {
+  return typeof arg === 'object' && arg !== null;
+}
+
+exports.isObject = isObject;
+
+function isDate(d) {
+  return isObject(d) && objectToString(d) === '[object Date]';
+}
+
+exports.isDate = isDate;
+
+function isError(e) {
+  return isObject(e) && (objectToString(e) === '[object Error]' || e instanceof Error);
+}
+
+exports.isError = isError;
+
+function isFunction(arg) {
+  return typeof arg === 'function';
+}
+
+exports.isFunction = isFunction;
+
+function isPrimitive(arg) {
+  return arg === null || typeof arg === 'boolean' || typeof arg === 'number' || typeof arg === 'string' || typeof arg === 'symbol' || // ES6 symbol
+  typeof arg === 'undefined';
+}
+
+exports.isPrimitive = isPrimitive;
+exports.isBuffer = require('./support/isBuffer');
+
+function objectToString(o) {
+  return Object.prototype.toString.call(o);
+}
+
+function pad(n) {
+  return n < 10 ? '0' + n.toString(10) : n.toString(10);
+}
+
+var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']; // 26 Feb 16:19:34
+
+function timestamp() {
+  var d = new Date();
+  var time = [pad(d.getHours()), pad(d.getMinutes()), pad(d.getSeconds())].join(':');
+  return [d.getDate(), months[d.getMonth()], time].join(' ');
+} // log is just a thin wrapper to console.log that prepends a timestamp
+
+
+exports.log = function () {
+  console.log('%s - %s', timestamp(), exports.format.apply(exports, arguments));
+};
+/**
+ * Inherit the prototype methods from one constructor into another.
+ *
+ * The Function.prototype.inherits from lang.js rewritten as a standalone
+ * function (not on Function.prototype). NOTE: If this file is to be loaded
+ * during bootstrapping this function needs to be rewritten using some native
+ * functions as prototype setup using normal JavaScript does not work as
+ * expected during bootstrapping (see mirror.js in r114903).
+ *
+ * @param {function} ctor Constructor function which needs to inherit the
+ *     prototype.
+ * @param {function} superCtor Constructor function to inherit prototype from.
+ */
+
+
+exports.inherits = require('inherits');
+
+exports._extend = function (origin, add) {
+  // Don't do anything if add isn't an object
+  if (!add || !isObject(add)) return origin;
+  var keys = Object.keys(add);
+  var i = keys.length;
+
+  while (i--) {
+    origin[keys[i]] = add[keys[i]];
+  }
+
+  return origin;
+};
+
+function hasOwnProperty(obj, prop) {
+  return Object.prototype.hasOwnProperty.call(obj, prop);
+}
+
+var kCustomPromisifiedSymbol = typeof Symbol !== 'undefined' ? Symbol('util.promisify.custom') : undefined;
+
+exports.promisify = function promisify(original) {
+  if (typeof original !== 'function') throw new TypeError('The "original" argument must be of type Function');
+
+  if (kCustomPromisifiedSymbol && original[kCustomPromisifiedSymbol]) {
+    var fn = original[kCustomPromisifiedSymbol];
+
+    if (typeof fn !== 'function') {
+      throw new TypeError('The "util.promisify.custom" argument must be of type Function');
+    }
+
+    Object.defineProperty(fn, kCustomPromisifiedSymbol, {
+      value: fn,
+      enumerable: false,
+      writable: false,
+      configurable: true
+    });
+    return fn;
+  }
+
+  function fn() {
+    var promiseResolve, promiseReject;
+    var promise = new Promise(function (resolve, reject) {
+      promiseResolve = resolve;
+      promiseReject = reject;
+    });
+    var args = [];
+
+    for (var i = 0; i < arguments.length; i++) {
+      args.push(arguments[i]);
+    }
+
+    args.push(function (err, value) {
+      if (err) {
+        promiseReject(err);
+      } else {
+        promiseResolve(value);
+      }
+    });
+
+    try {
+      original.apply(this, args);
+    } catch (err) {
+      promiseReject(err);
+    }
+
+    return promise;
+  }
+
+  Object.setPrototypeOf(fn, Object.getPrototypeOf(original));
+  if (kCustomPromisifiedSymbol) Object.defineProperty(fn, kCustomPromisifiedSymbol, {
+    value: fn,
+    enumerable: false,
+    writable: false,
+    configurable: true
+  });
+  return Object.defineProperties(fn, getOwnPropertyDescriptors(original));
+};
+
+exports.promisify.custom = kCustomPromisifiedSymbol;
+
+function callbackifyOnRejected(reason, cb) {
+  // `!reason` guard inspired by bluebird (Ref: https://goo.gl/t5IS6M).
+  // Because `null` is a special error value in callbacks which means "no error
+  // occurred", we error-wrap so the callback consumer can distinguish between
+  // "the promise rejected with null" or "the promise fulfilled with undefined".
+  if (!reason) {
+    var newReason = new Error('Promise was rejected with a falsy value');
+    newReason.reason = reason;
+    reason = newReason;
+  }
+
+  return cb(reason);
+}
+
+function callbackify(original) {
+  if (typeof original !== 'function') {
+    throw new TypeError('The "original" argument must be of type Function');
+  } // We DO NOT return the promise as it gives the user a false sense that
+  // the promise is actually somehow related to the callback's execution
+  // and that the callback throwing will reject the promise.
+
+
+  function callbackified() {
+    var args = [];
+
+    for (var i = 0; i < arguments.length; i++) {
+      args.push(arguments[i]);
+    }
+
+    var maybeCb = args.pop();
+
+    if (typeof maybeCb !== 'function') {
+      throw new TypeError('The last argument must be of type Function');
+    }
+
+    var self = this;
+
+    var cb = function () {
+      return maybeCb.apply(self, arguments);
+    }; // In true node style we process the callback on `nextTick` with all the
+    // implications (stack, `uncaughtException`, `async_hooks`)
+
+
+    original.apply(this, args).then(function (ret) {
+      process.nextTick(cb, null, ret);
+    }, function (rej) {
+      process.nextTick(callbackifyOnRejected, rej, cb);
+    });
+  }
+
+  Object.setPrototypeOf(callbackified, Object.getPrototypeOf(original));
+  Object.defineProperties(callbackified, getOwnPropertyDescriptors(original));
+  return callbackified;
+}
+
+exports.callbackify = callbackify;
+},{"./support/isBuffer":"../../node_modules/util/support/isBufferBrowser.js","inherits":"../../node_modules/util/node_modules/inherits/inherits_browser.js","process":"../../node_modules/process/browser.js"}],"../../node_modules/object-assign/index.js":[function(require,module,exports) {
+/*
+object-assign
+(c) Sindre Sorhus
+@license MIT
+*/
+'use strict';
+/* eslint-disable no-unused-vars */
+
+var getOwnPropertySymbols = Object.getOwnPropertySymbols;
+var hasOwnProperty = Object.prototype.hasOwnProperty;
+var propIsEnumerable = Object.prototype.propertyIsEnumerable;
+
+function toObject(val) {
+  if (val === null || val === undefined) {
+    throw new TypeError('Object.assign cannot be called with null or undefined');
+  }
+
+  return Object(val);
+}
+
+function shouldUseNative() {
+  try {
+    if (!Object.assign) {
+      return false;
+    } // Detect buggy property enumeration order in older V8 versions.
+    // https://bugs.chromium.org/p/v8/issues/detail?id=4118
+
+
+    var test1 = new String('abc'); // eslint-disable-line no-new-wrappers
+
+    test1[5] = 'de';
+
+    if (Object.getOwnPropertyNames(test1)[0] === '5') {
+      return false;
+    } // https://bugs.chromium.org/p/v8/issues/detail?id=3056
+
+
+    var test2 = {};
+
+    for (var i = 0; i < 10; i++) {
+      test2['_' + String.fromCharCode(i)] = i;
+    }
+
+    var order2 = Object.getOwnPropertyNames(test2).map(function (n) {
+      return test2[n];
+    });
+
+    if (order2.join('') !== '0123456789') {
+      return false;
+    } // https://bugs.chromium.org/p/v8/issues/detail?id=3056
+
+
+    var test3 = {};
+    'abcdefghijklmnopqrst'.split('').forEach(function (letter) {
+      test3[letter] = letter;
+    });
+
+    if (Object.keys(Object.assign({}, test3)).join('') !== 'abcdefghijklmnopqrst') {
+      return false;
+    }
+
+    return true;
+  } catch (err) {
+    // We don't expect any of the above to throw, but better to be safe.
+    return false;
+  }
+}
+
+module.exports = shouldUseNative() ? Object.assign : function (target, source) {
+  var from;
+  var to = toObject(target);
+  var symbols;
+
+  for (var s = 1; s < arguments.length; s++) {
+    from = Object(arguments[s]);
+
+    for (var key in from) {
+      if (hasOwnProperty.call(from, key)) {
+        to[key] = from[key];
+      }
+    }
+
+    if (getOwnPropertySymbols) {
+      symbols = getOwnPropertySymbols(from);
+
+      for (var i = 0; i < symbols.length; i++) {
+        if (propIsEnumerable.call(from, symbols[i])) {
+          to[symbols[i]] = from[symbols[i]];
+        }
+      }
+    }
+  }
+
+  return to;
+};
+},{}],"../../node_modules/assert/node_modules/util/support/isBufferBrowser.js":[function(require,module,exports) {
+module.exports = function isBuffer(arg) {
+  return arg && typeof arg === 'object'
+    && typeof arg.copy === 'function'
+    && typeof arg.fill === 'function'
+    && typeof arg.readUInt8 === 'function';
+}
+},{}],"../../node_modules/assert/node_modules/inherits/inherits_browser.js":[function(require,module,exports) {
+if (typeof Object.create === 'function') {
+  // implementation from standard node.js 'util' module
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    ctor.prototype = Object.create(superCtor.prototype, {
+      constructor: {
+        value: ctor,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+  };
+} else {
+  // old school shim for old browsers
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    var TempCtor = function () {}
+    TempCtor.prototype = superCtor.prototype
+    ctor.prototype = new TempCtor()
+    ctor.prototype.constructor = ctor
+  }
+}
+
+},{}],"../../node_modules/assert/node_modules/util/util.js":[function(require,module,exports) {
+var global = arguments[3];
+var process = require("process");
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+var formatRegExp = /%[sdj%]/g;
+
+exports.format = function (f) {
+  if (!isString(f)) {
+    var objects = [];
+
+    for (var i = 0; i < arguments.length; i++) {
+      objects.push(inspect(arguments[i]));
+    }
+
+    return objects.join(' ');
+  }
+
+  var i = 1;
+  var args = arguments;
+  var len = args.length;
+  var str = String(f).replace(formatRegExp, function (x) {
+    if (x === '%%') return '%';
+    if (i >= len) return x;
+
+    switch (x) {
+      case '%s':
+        return String(args[i++]);
+
+      case '%d':
+        return Number(args[i++]);
+
+      case '%j':
+        try {
+          return JSON.stringify(args[i++]);
+        } catch (_) {
+          return '[Circular]';
+        }
+
+      default:
+        return x;
+    }
+  });
+
+  for (var x = args[i]; i < len; x = args[++i]) {
+    if (isNull(x) || !isObject(x)) {
+      str += ' ' + x;
+    } else {
+      str += ' ' + inspect(x);
+    }
+  }
+
+  return str;
+}; // Mark that a method should not be used.
+// Returns a modified function which warns once by default.
+// If --no-deprecation is set, then it is a no-op.
+
+
+exports.deprecate = function (fn, msg) {
+  // Allow for deprecating things in the process of starting up.
+  if (isUndefined(global.process)) {
+    return function () {
+      return exports.deprecate(fn, msg).apply(this, arguments);
+    };
+  }
+
+  if (process.noDeprecation === true) {
+    return fn;
+  }
+
+  var warned = false;
+
+  function deprecated() {
+    if (!warned) {
+      if (process.throwDeprecation) {
+        throw new Error(msg);
+      } else if (process.traceDeprecation) {
+        console.trace(msg);
+      } else {
+        console.error(msg);
+      }
+
+      warned = true;
+    }
+
+    return fn.apply(this, arguments);
+  }
+
+  return deprecated;
+};
+
+var debugs = {};
+var debugEnviron;
+
+exports.debuglog = function (set) {
+  if (isUndefined(debugEnviron)) debugEnviron = undefined || '';
+  set = set.toUpperCase();
+
+  if (!debugs[set]) {
+    if (new RegExp('\\b' + set + '\\b', 'i').test(debugEnviron)) {
+      var pid = process.pid;
+
+      debugs[set] = function () {
+        var msg = exports.format.apply(exports, arguments);
+        console.error('%s %d: %s', set, pid, msg);
+      };
+    } else {
+      debugs[set] = function () {};
+    }
+  }
+
+  return debugs[set];
+};
+/**
+ * Echos the value of a value. Trys to print the value out
+ * in the best way possible given the different types.
+ *
+ * @param {Object} obj The object to print out.
+ * @param {Object} opts Optional options object that alters the output.
+ */
+
+/* legacy: obj, showHidden, depth, colors*/
+
+
+function inspect(obj, opts) {
+  // default options
+  var ctx = {
+    seen: [],
+    stylize: stylizeNoColor
+  }; // legacy...
+
+  if (arguments.length >= 3) ctx.depth = arguments[2];
+  if (arguments.length >= 4) ctx.colors = arguments[3];
+
+  if (isBoolean(opts)) {
+    // legacy...
+    ctx.showHidden = opts;
+  } else if (opts) {
+    // got an "options" object
+    exports._extend(ctx, opts);
+  } // set default options
+
+
+  if (isUndefined(ctx.showHidden)) ctx.showHidden = false;
+  if (isUndefined(ctx.depth)) ctx.depth = 2;
+  if (isUndefined(ctx.colors)) ctx.colors = false;
+  if (isUndefined(ctx.customInspect)) ctx.customInspect = true;
+  if (ctx.colors) ctx.stylize = stylizeWithColor;
+  return formatValue(ctx, obj, ctx.depth);
+}
+
+exports.inspect = inspect; // http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
+
+inspect.colors = {
+  'bold': [1, 22],
+  'italic': [3, 23],
+  'underline': [4, 24],
+  'inverse': [7, 27],
+  'white': [37, 39],
+  'grey': [90, 39],
+  'black': [30, 39],
+  'blue': [34, 39],
+  'cyan': [36, 39],
+  'green': [32, 39],
+  'magenta': [35, 39],
+  'red': [31, 39],
+  'yellow': [33, 39]
+}; // Don't use 'blue' not visible on cmd.exe
+
+inspect.styles = {
+  'special': 'cyan',
+  'number': 'yellow',
+  'boolean': 'yellow',
+  'undefined': 'grey',
+  'null': 'bold',
+  'string': 'green',
+  'date': 'magenta',
+  // "name": intentionally not styling
+  'regexp': 'red'
+};
+
+function stylizeWithColor(str, styleType) {
+  var style = inspect.styles[styleType];
+
+  if (style) {
+    return '\u001b[' + inspect.colors[style][0] + 'm' + str + '\u001b[' + inspect.colors[style][1] + 'm';
+  } else {
+    return str;
+  }
+}
+
+function stylizeNoColor(str, styleType) {
+  return str;
+}
+
+function arrayToHash(array) {
+  var hash = {};
+  array.forEach(function (val, idx) {
+    hash[val] = true;
+  });
+  return hash;
+}
+
+function formatValue(ctx, value, recurseTimes) {
+  // Provide a hook for user-specified inspect functions.
+  // Check that value is an object with an inspect function on it
+  if (ctx.customInspect && value && isFunction(value.inspect) && // Filter out the util module, it's inspect function is special
+  value.inspect !== exports.inspect && // Also filter out any prototype objects using the circular check.
+  !(value.constructor && value.constructor.prototype === value)) {
+    var ret = value.inspect(recurseTimes, ctx);
+
+    if (!isString(ret)) {
+      ret = formatValue(ctx, ret, recurseTimes);
+    }
+
+    return ret;
+  } // Primitive types cannot have properties
+
+
+  var primitive = formatPrimitive(ctx, value);
+
+  if (primitive) {
+    return primitive;
+  } // Look up the keys of the object.
+
+
+  var keys = Object.keys(value);
+  var visibleKeys = arrayToHash(keys);
+
+  if (ctx.showHidden) {
+    keys = Object.getOwnPropertyNames(value);
+  } // IE doesn't make error fields non-enumerable
+  // http://msdn.microsoft.com/en-us/library/ie/dww52sbt(v=vs.94).aspx
+
+
+  if (isError(value) && (keys.indexOf('message') >= 0 || keys.indexOf('description') >= 0)) {
+    return formatError(value);
+  } // Some type of object without properties can be shortcutted.
+
+
+  if (keys.length === 0) {
+    if (isFunction(value)) {
+      var name = value.name ? ': ' + value.name : '';
+      return ctx.stylize('[Function' + name + ']', 'special');
+    }
+
+    if (isRegExp(value)) {
+      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
+    }
+
+    if (isDate(value)) {
+      return ctx.stylize(Date.prototype.toString.call(value), 'date');
+    }
+
+    if (isError(value)) {
+      return formatError(value);
+    }
+  }
+
+  var base = '',
+      array = false,
+      braces = ['{', '}']; // Make Array say that they are Array
+
+  if (isArray(value)) {
+    array = true;
+    braces = ['[', ']'];
+  } // Make functions say that they are functions
+
+
+  if (isFunction(value)) {
+    var n = value.name ? ': ' + value.name : '';
+    base = ' [Function' + n + ']';
+  } // Make RegExps say that they are RegExps
+
+
+  if (isRegExp(value)) {
+    base = ' ' + RegExp.prototype.toString.call(value);
+  } // Make dates with properties first say the date
+
+
+  if (isDate(value)) {
+    base = ' ' + Date.prototype.toUTCString.call(value);
+  } // Make error with message first say the error
+
+
+  if (isError(value)) {
+    base = ' ' + formatError(value);
+  }
+
+  if (keys.length === 0 && (!array || value.length == 0)) {
+    return braces[0] + base + braces[1];
+  }
+
+  if (recurseTimes < 0) {
+    if (isRegExp(value)) {
+      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
+    } else {
+      return ctx.stylize('[Object]', 'special');
+    }
+  }
+
+  ctx.seen.push(value);
+  var output;
+
+  if (array) {
+    output = formatArray(ctx, value, recurseTimes, visibleKeys, keys);
+  } else {
+    output = keys.map(function (key) {
+      return formatProperty(ctx, value, recurseTimes, visibleKeys, key, array);
+    });
+  }
+
+  ctx.seen.pop();
+  return reduceToSingleString(output, base, braces);
+}
+
+function formatPrimitive(ctx, value) {
+  if (isUndefined(value)) return ctx.stylize('undefined', 'undefined');
+
+  if (isString(value)) {
+    var simple = '\'' + JSON.stringify(value).replace(/^"|"$/g, '').replace(/'/g, "\\'").replace(/\\"/g, '"') + '\'';
+    return ctx.stylize(simple, 'string');
+  }
+
+  if (isNumber(value)) return ctx.stylize('' + value, 'number');
+  if (isBoolean(value)) return ctx.stylize('' + value, 'boolean'); // For some reason typeof null is "object", so special case here.
+
+  if (isNull(value)) return ctx.stylize('null', 'null');
+}
+
+function formatError(value) {
+  return '[' + Error.prototype.toString.call(value) + ']';
+}
+
+function formatArray(ctx, value, recurseTimes, visibleKeys, keys) {
+  var output = [];
+
+  for (var i = 0, l = value.length; i < l; ++i) {
+    if (hasOwnProperty(value, String(i))) {
+      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys, String(i), true));
+    } else {
+      output.push('');
+    }
+  }
+
+  keys.forEach(function (key) {
+    if (!key.match(/^\d+$/)) {
+      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys, key, true));
+    }
+  });
+  return output;
+}
+
+function formatProperty(ctx, value, recurseTimes, visibleKeys, key, array) {
+  var name, str, desc;
+  desc = Object.getOwnPropertyDescriptor(value, key) || {
+    value: value[key]
+  };
+
+  if (desc.get) {
+    if (desc.set) {
+      str = ctx.stylize('[Getter/Setter]', 'special');
+    } else {
+      str = ctx.stylize('[Getter]', 'special');
+    }
+  } else {
+    if (desc.set) {
+      str = ctx.stylize('[Setter]', 'special');
+    }
+  }
+
+  if (!hasOwnProperty(visibleKeys, key)) {
+    name = '[' + key + ']';
+  }
+
+  if (!str) {
+    if (ctx.seen.indexOf(desc.value) < 0) {
+      if (isNull(recurseTimes)) {
+        str = formatValue(ctx, desc.value, null);
+      } else {
+        str = formatValue(ctx, desc.value, recurseTimes - 1);
+      }
+
+      if (str.indexOf('\n') > -1) {
+        if (array) {
+          str = str.split('\n').map(function (line) {
+            return '  ' + line;
+          }).join('\n').substr(2);
+        } else {
+          str = '\n' + str.split('\n').map(function (line) {
+            return '   ' + line;
+          }).join('\n');
+        }
+      }
+    } else {
+      str = ctx.stylize('[Circular]', 'special');
+    }
+  }
+
+  if (isUndefined(name)) {
+    if (array && key.match(/^\d+$/)) {
+      return str;
+    }
+
+    name = JSON.stringify('' + key);
+
+    if (name.match(/^"([a-zA-Z_][a-zA-Z_0-9]*)"$/)) {
+      name = name.substr(1, name.length - 2);
+      name = ctx.stylize(name, 'name');
+    } else {
+      name = name.replace(/'/g, "\\'").replace(/\\"/g, '"').replace(/(^"|"$)/g, "'");
+      name = ctx.stylize(name, 'string');
+    }
+  }
+
+  return name + ': ' + str;
+}
+
+function reduceToSingleString(output, base, braces) {
+  var numLinesEst = 0;
+  var length = output.reduce(function (prev, cur) {
+    numLinesEst++;
+    if (cur.indexOf('\n') >= 0) numLinesEst++;
+    return prev + cur.replace(/\u001b\[\d\d?m/g, '').length + 1;
+  }, 0);
+
+  if (length > 60) {
+    return braces[0] + (base === '' ? '' : base + '\n ') + ' ' + output.join(',\n  ') + ' ' + braces[1];
+  }
+
+  return braces[0] + base + ' ' + output.join(', ') + ' ' + braces[1];
+} // NOTE: These type checking functions intentionally don't use `instanceof`
+// because it is fragile and can be easily faked with `Object.create()`.
+
+
+function isArray(ar) {
+  return Array.isArray(ar);
+}
+
+exports.isArray = isArray;
+
+function isBoolean(arg) {
+  return typeof arg === 'boolean';
+}
+
+exports.isBoolean = isBoolean;
+
+function isNull(arg) {
+  return arg === null;
+}
+
+exports.isNull = isNull;
+
+function isNullOrUndefined(arg) {
+  return arg == null;
+}
+
+exports.isNullOrUndefined = isNullOrUndefined;
+
+function isNumber(arg) {
+  return typeof arg === 'number';
+}
+
+exports.isNumber = isNumber;
+
+function isString(arg) {
+  return typeof arg === 'string';
+}
+
+exports.isString = isString;
+
+function isSymbol(arg) {
+  return typeof arg === 'symbol';
+}
+
+exports.isSymbol = isSymbol;
+
+function isUndefined(arg) {
+  return arg === void 0;
+}
+
+exports.isUndefined = isUndefined;
+
+function isRegExp(re) {
+  return isObject(re) && objectToString(re) === '[object RegExp]';
+}
+
+exports.isRegExp = isRegExp;
+
+function isObject(arg) {
+  return typeof arg === 'object' && arg !== null;
+}
+
+exports.isObject = isObject;
+
+function isDate(d) {
+  return isObject(d) && objectToString(d) === '[object Date]';
+}
+
+exports.isDate = isDate;
+
+function isError(e) {
+  return isObject(e) && (objectToString(e) === '[object Error]' || e instanceof Error);
+}
+
+exports.isError = isError;
+
+function isFunction(arg) {
+  return typeof arg === 'function';
+}
+
+exports.isFunction = isFunction;
+
+function isPrimitive(arg) {
+  return arg === null || typeof arg === 'boolean' || typeof arg === 'number' || typeof arg === 'string' || typeof arg === 'symbol' || // ES6 symbol
+  typeof arg === 'undefined';
+}
+
+exports.isPrimitive = isPrimitive;
+exports.isBuffer = require('./support/isBuffer');
+
+function objectToString(o) {
+  return Object.prototype.toString.call(o);
+}
+
+function pad(n) {
+  return n < 10 ? '0' + n.toString(10) : n.toString(10);
+}
+
+var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']; // 26 Feb 16:19:34
+
+function timestamp() {
+  var d = new Date();
+  var time = [pad(d.getHours()), pad(d.getMinutes()), pad(d.getSeconds())].join(':');
+  return [d.getDate(), months[d.getMonth()], time].join(' ');
+} // log is just a thin wrapper to console.log that prepends a timestamp
+
+
+exports.log = function () {
+  console.log('%s - %s', timestamp(), exports.format.apply(exports, arguments));
+};
+/**
+ * Inherit the prototype methods from one constructor into another.
+ *
+ * The Function.prototype.inherits from lang.js rewritten as a standalone
+ * function (not on Function.prototype). NOTE: If this file is to be loaded
+ * during bootstrapping this function needs to be rewritten using some native
+ * functions as prototype setup using normal JavaScript does not work as
+ * expected during bootstrapping (see mirror.js in r114903).
+ *
+ * @param {function} ctor Constructor function which needs to inherit the
+ *     prototype.
+ * @param {function} superCtor Constructor function to inherit prototype from.
+ */
+
+
+exports.inherits = require('inherits');
+
+exports._extend = function (origin, add) {
+  // Don't do anything if add isn't an object
+  if (!add || !isObject(add)) return origin;
+  var keys = Object.keys(add);
+  var i = keys.length;
+
+  while (i--) {
+    origin[keys[i]] = add[keys[i]];
+  }
+
+  return origin;
+};
+
+function hasOwnProperty(obj, prop) {
+  return Object.prototype.hasOwnProperty.call(obj, prop);
+}
+},{"./support/isBuffer":"../../node_modules/assert/node_modules/util/support/isBufferBrowser.js","inherits":"../../node_modules/assert/node_modules/inherits/inherits_browser.js","process":"../../node_modules/process/browser.js"}],"../../node_modules/assert/assert.js":[function(require,module,exports) {
+var global = arguments[3];
+'use strict';
+
+var objectAssign = require('object-assign');
+
+// compare and isBuffer taken from https://github.com/feross/buffer/blob/680e9e5e488f22aac27599a57dc844a6315928dd/index.js
+// original notice:
+
+/*!
+ * The buffer module from node.js, for the browser.
+ *
+ * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
+ * @license  MIT
+ */
+function compare(a, b) {
+  if (a === b) {
+    return 0;
+  }
+
+  var x = a.length;
+  var y = b.length;
+
+  for (var i = 0, len = Math.min(x, y); i < len; ++i) {
+    if (a[i] !== b[i]) {
+      x = a[i];
+      y = b[i];
+      break;
+    }
+  }
+
+  if (x < y) {
+    return -1;
+  }
+  if (y < x) {
+    return 1;
+  }
+  return 0;
+}
+function isBuffer(b) {
+  if (global.Buffer && typeof global.Buffer.isBuffer === 'function') {
+    return global.Buffer.isBuffer(b);
+  }
+  return !!(b != null && b._isBuffer);
+}
+
+// based on node assert, original notice:
+// NB: The URL to the CommonJS spec is kept just for tradition.
+//     node-assert has evolved a lot since then, both in API and behavior.
+
+// http://wiki.commonjs.org/wiki/Unit_Testing/1.0
+//
+// THIS IS NOT TESTED NOR LIKELY TO WORK OUTSIDE V8!
+//
+// Originally from narwhal.js (http://narwhaljs.org)
+// Copyright (c) 2009 Thomas Robinson <280north.com>
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the 'Software'), to
+// deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+// sell copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+// ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+var util = require('util/');
+var hasOwn = Object.prototype.hasOwnProperty;
+var pSlice = Array.prototype.slice;
+var functionsHaveNames = (function () {
+  return function foo() {}.name === 'foo';
+}());
+function pToString (obj) {
+  return Object.prototype.toString.call(obj);
+}
+function isView(arrbuf) {
+  if (isBuffer(arrbuf)) {
+    return false;
+  }
+  if (typeof global.ArrayBuffer !== 'function') {
+    return false;
+  }
+  if (typeof ArrayBuffer.isView === 'function') {
+    return ArrayBuffer.isView(arrbuf);
+  }
+  if (!arrbuf) {
+    return false;
+  }
+  if (arrbuf instanceof DataView) {
+    return true;
+  }
+  if (arrbuf.buffer && arrbuf.buffer instanceof ArrayBuffer) {
+    return true;
+  }
+  return false;
+}
+// 1. The assert module provides functions that throw
+// AssertionError's when particular conditions are not met. The
+// assert module must conform to the following interface.
+
+var assert = module.exports = ok;
+
+// 2. The AssertionError is defined in assert.
+// new assert.AssertionError({ message: message,
+//                             actual: actual,
+//                             expected: expected })
+
+var regex = /\s*function\s+([^\(\s]*)\s*/;
+// based on https://github.com/ljharb/function.prototype.name/blob/adeeeec8bfcc6068b187d7d9fb3d5bb1d3a30899/implementation.js
+function getName(func) {
+  if (!util.isFunction(func)) {
+    return;
+  }
+  if (functionsHaveNames) {
+    return func.name;
+  }
+  var str = func.toString();
+  var match = str.match(regex);
+  return match && match[1];
+}
+assert.AssertionError = function AssertionError(options) {
+  this.name = 'AssertionError';
+  this.actual = options.actual;
+  this.expected = options.expected;
+  this.operator = options.operator;
+  if (options.message) {
+    this.message = options.message;
+    this.generatedMessage = false;
+  } else {
+    this.message = getMessage(this);
+    this.generatedMessage = true;
+  }
+  var stackStartFunction = options.stackStartFunction || fail;
+  if (Error.captureStackTrace) {
+    Error.captureStackTrace(this, stackStartFunction);
+  } else {
+    // non v8 browsers so we can have a stacktrace
+    var err = new Error();
+    if (err.stack) {
+      var out = err.stack;
+
+      // try to strip useless frames
+      var fn_name = getName(stackStartFunction);
+      var idx = out.indexOf('\n' + fn_name);
+      if (idx >= 0) {
+        // once we have located the function frame
+        // we need to strip out everything before it (and its line)
+        var next_line = out.indexOf('\n', idx + 1);
+        out = out.substring(next_line + 1);
+      }
+
+      this.stack = out;
+    }
+  }
+};
+
+// assert.AssertionError instanceof Error
+util.inherits(assert.AssertionError, Error);
+
+function truncate(s, n) {
+  if (typeof s === 'string') {
+    return s.length < n ? s : s.slice(0, n);
+  } else {
+    return s;
+  }
+}
+function inspect(something) {
+  if (functionsHaveNames || !util.isFunction(something)) {
+    return util.inspect(something);
+  }
+  var rawname = getName(something);
+  var name = rawname ? ': ' + rawname : '';
+  return '[Function' +  name + ']';
+}
+function getMessage(self) {
+  return truncate(inspect(self.actual), 128) + ' ' +
+         self.operator + ' ' +
+         truncate(inspect(self.expected), 128);
+}
+
+// At present only the three keys mentioned above are used and
+// understood by the spec. Implementations or sub modules can pass
+// other keys to the AssertionError's constructor - they will be
+// ignored.
+
+// 3. All of the following functions must throw an AssertionError
+// when a corresponding condition is not met, with a message that
+// may be undefined if not provided.  All assertion methods provide
+// both the actual and expected values to the assertion error for
+// display purposes.
+
+function fail(actual, expected, message, operator, stackStartFunction) {
+  throw new assert.AssertionError({
+    message: message,
+    actual: actual,
+    expected: expected,
+    operator: operator,
+    stackStartFunction: stackStartFunction
+  });
+}
+
+// EXTENSION! allows for well behaved errors defined elsewhere.
+assert.fail = fail;
+
+// 4. Pure assertion tests whether a value is truthy, as determined
+// by !!guard.
+// assert.ok(guard, message_opt);
+// This statement is equivalent to assert.equal(true, !!guard,
+// message_opt);. To test strictly for the value true, use
+// assert.strictEqual(true, guard, message_opt);.
+
+function ok(value, message) {
+  if (!value) fail(value, true, message, '==', assert.ok);
+}
+assert.ok = ok;
+
+// 5. The equality assertion tests shallow, coercive equality with
+// ==.
+// assert.equal(actual, expected, message_opt);
+
+assert.equal = function equal(actual, expected, message) {
+  if (actual != expected) fail(actual, expected, message, '==', assert.equal);
+};
+
+// 6. The non-equality assertion tests for whether two objects are not equal
+// with != assert.notEqual(actual, expected, message_opt);
+
+assert.notEqual = function notEqual(actual, expected, message) {
+  if (actual == expected) {
+    fail(actual, expected, message, '!=', assert.notEqual);
+  }
+};
+
+// 7. The equivalence assertion tests a deep equality relation.
+// assert.deepEqual(actual, expected, message_opt);
+
+assert.deepEqual = function deepEqual(actual, expected, message) {
+  if (!_deepEqual(actual, expected, false)) {
+    fail(actual, expected, message, 'deepEqual', assert.deepEqual);
+  }
+};
+
+assert.deepStrictEqual = function deepStrictEqual(actual, expected, message) {
+  if (!_deepEqual(actual, expected, true)) {
+    fail(actual, expected, message, 'deepStrictEqual', assert.deepStrictEqual);
+  }
+};
+
+function _deepEqual(actual, expected, strict, memos) {
+  // 7.1. All identical values are equivalent, as determined by ===.
+  if (actual === expected) {
+    return true;
+  } else if (isBuffer(actual) && isBuffer(expected)) {
+    return compare(actual, expected) === 0;
+
+  // 7.2. If the expected value is a Date object, the actual value is
+  // equivalent if it is also a Date object that refers to the same time.
+  } else if (util.isDate(actual) && util.isDate(expected)) {
+    return actual.getTime() === expected.getTime();
+
+  // 7.3 If the expected value is a RegExp object, the actual value is
+  // equivalent if it is also a RegExp object with the same source and
+  // properties (`global`, `multiline`, `lastIndex`, `ignoreCase`).
+  } else if (util.isRegExp(actual) && util.isRegExp(expected)) {
+    return actual.source === expected.source &&
+           actual.global === expected.global &&
+           actual.multiline === expected.multiline &&
+           actual.lastIndex === expected.lastIndex &&
+           actual.ignoreCase === expected.ignoreCase;
+
+  // 7.4. Other pairs that do not both pass typeof value == 'object',
+  // equivalence is determined by ==.
+  } else if ((actual === null || typeof actual !== 'object') &&
+             (expected === null || typeof expected !== 'object')) {
+    return strict ? actual === expected : actual == expected;
+
+  // If both values are instances of typed arrays, wrap their underlying
+  // ArrayBuffers in a Buffer each to increase performance
+  // This optimization requires the arrays to have the same type as checked by
+  // Object.prototype.toString (aka pToString). Never perform binary
+  // comparisons for Float*Arrays, though, since e.g. +0 === -0 but their
+  // bit patterns are not identical.
+  } else if (isView(actual) && isView(expected) &&
+             pToString(actual) === pToString(expected) &&
+             !(actual instanceof Float32Array ||
+               actual instanceof Float64Array)) {
+    return compare(new Uint8Array(actual.buffer),
+                   new Uint8Array(expected.buffer)) === 0;
+
+  // 7.5 For all other Object pairs, including Array objects, equivalence is
+  // determined by having the same number of owned properties (as verified
+  // with Object.prototype.hasOwnProperty.call), the same set of keys
+  // (although not necessarily the same order), equivalent values for every
+  // corresponding key, and an identical 'prototype' property. Note: this
+  // accounts for both named and indexed properties on Arrays.
+  } else if (isBuffer(actual) !== isBuffer(expected)) {
+    return false;
+  } else {
+    memos = memos || {actual: [], expected: []};
+
+    var actualIndex = memos.actual.indexOf(actual);
+    if (actualIndex !== -1) {
+      if (actualIndex === memos.expected.indexOf(expected)) {
+        return true;
+      }
+    }
+
+    memos.actual.push(actual);
+    memos.expected.push(expected);
+
+    return objEquiv(actual, expected, strict, memos);
+  }
+}
+
+function isArguments(object) {
+  return Object.prototype.toString.call(object) == '[object Arguments]';
+}
+
+function objEquiv(a, b, strict, actualVisitedObjects) {
+  if (a === null || a === undefined || b === null || b === undefined)
+    return false;
+  // if one is a primitive, the other must be same
+  if (util.isPrimitive(a) || util.isPrimitive(b))
+    return a === b;
+  if (strict && Object.getPrototypeOf(a) !== Object.getPrototypeOf(b))
+    return false;
+  var aIsArgs = isArguments(a);
+  var bIsArgs = isArguments(b);
+  if ((aIsArgs && !bIsArgs) || (!aIsArgs && bIsArgs))
+    return false;
+  if (aIsArgs) {
+    a = pSlice.call(a);
+    b = pSlice.call(b);
+    return _deepEqual(a, b, strict);
+  }
+  var ka = objectKeys(a);
+  var kb = objectKeys(b);
+  var key, i;
+  // having the same number of owned properties (keys incorporates
+  // hasOwnProperty)
+  if (ka.length !== kb.length)
+    return false;
+  //the same set of keys (although not necessarily the same order),
+  ka.sort();
+  kb.sort();
+  //~~~cheap key test
+  for (i = ka.length - 1; i >= 0; i--) {
+    if (ka[i] !== kb[i])
+      return false;
+  }
+  //equivalent values for every corresponding key, and
+  //~~~possibly expensive deep test
+  for (i = ka.length - 1; i >= 0; i--) {
+    key = ka[i];
+    if (!_deepEqual(a[key], b[key], strict, actualVisitedObjects))
+      return false;
+  }
+  return true;
+}
+
+// 8. The non-equivalence assertion tests for any deep inequality.
+// assert.notDeepEqual(actual, expected, message_opt);
+
+assert.notDeepEqual = function notDeepEqual(actual, expected, message) {
+  if (_deepEqual(actual, expected, false)) {
+    fail(actual, expected, message, 'notDeepEqual', assert.notDeepEqual);
+  }
+};
+
+assert.notDeepStrictEqual = notDeepStrictEqual;
+function notDeepStrictEqual(actual, expected, message) {
+  if (_deepEqual(actual, expected, true)) {
+    fail(actual, expected, message, 'notDeepStrictEqual', notDeepStrictEqual);
+  }
+}
+
+
+// 9. The strict equality assertion tests strict equality, as determined by ===.
+// assert.strictEqual(actual, expected, message_opt);
+
+assert.strictEqual = function strictEqual(actual, expected, message) {
+  if (actual !== expected) {
+    fail(actual, expected, message, '===', assert.strictEqual);
+  }
+};
+
+// 10. The strict non-equality assertion tests for strict inequality, as
+// determined by !==.  assert.notStrictEqual(actual, expected, message_opt);
+
+assert.notStrictEqual = function notStrictEqual(actual, expected, message) {
+  if (actual === expected) {
+    fail(actual, expected, message, '!==', assert.notStrictEqual);
+  }
+};
+
+function expectedException(actual, expected) {
+  if (!actual || !expected) {
+    return false;
+  }
+
+  if (Object.prototype.toString.call(expected) == '[object RegExp]') {
+    return expected.test(actual);
+  }
+
+  try {
+    if (actual instanceof expected) {
+      return true;
+    }
+  } catch (e) {
+    // Ignore.  The instanceof check doesn't work for arrow functions.
+  }
+
+  if (Error.isPrototypeOf(expected)) {
+    return false;
+  }
+
+  return expected.call({}, actual) === true;
+}
+
+function _tryBlock(block) {
+  var error;
+  try {
+    block();
+  } catch (e) {
+    error = e;
+  }
+  return error;
+}
+
+function _throws(shouldThrow, block, expected, message) {
+  var actual;
+
+  if (typeof block !== 'function') {
+    throw new TypeError('"block" argument must be a function');
+  }
+
+  if (typeof expected === 'string') {
+    message = expected;
+    expected = null;
+  }
+
+  actual = _tryBlock(block);
+
+  message = (expected && expected.name ? ' (' + expected.name + ').' : '.') +
+            (message ? ' ' + message : '.');
+
+  if (shouldThrow && !actual) {
+    fail(actual, expected, 'Missing expected exception' + message);
+  }
+
+  var userProvidedMessage = typeof message === 'string';
+  var isUnwantedException = !shouldThrow && util.isError(actual);
+  var isUnexpectedException = !shouldThrow && actual && !expected;
+
+  if ((isUnwantedException &&
+      userProvidedMessage &&
+      expectedException(actual, expected)) ||
+      isUnexpectedException) {
+    fail(actual, expected, 'Got unwanted exception' + message);
+  }
+
+  if ((shouldThrow && actual && expected &&
+      !expectedException(actual, expected)) || (!shouldThrow && actual)) {
+    throw actual;
+  }
+}
+
+// 11. Expected to throw an error:
+// assert.throws(block, Error_opt, message_opt);
+
+assert.throws = function(block, /*optional*/error, /*optional*/message) {
+  _throws(true, block, error, message);
+};
+
+// EXTENSION! This is annoying to write outside this module.
+assert.doesNotThrow = function(block, /*optional*/error, /*optional*/message) {
+  _throws(false, block, error, message);
+};
+
+assert.ifError = function(err) { if (err) throw err; };
+
+// Expose a strict only variant of assert
+function strict(value, message) {
+  if (!value) fail(value, true, message, '==', strict);
+}
+assert.strict = objectAssign(strict, assert, {
+  equal: assert.strictEqual,
+  deepEqual: assert.deepStrictEqual,
+  notEqual: assert.notStrictEqual,
+  notDeepEqual: assert.notDeepStrictEqual
+});
+assert.strict.strict = assert.strict;
+
+var objectKeys = Object.keys || function (obj) {
+  var keys = [];
+  for (var key in obj) {
+    if (hasOwn.call(obj, key)) keys.push(key);
+  }
+  return keys;
+};
+
+},{"object-assign":"../../node_modules/object-assign/index.js","util/":"../../node_modules/assert/node_modules/util/util.js"}],"../../node_modules/console-browserify/index.js":[function(require,module,exports) {
+var global = arguments[3];
+/*global window, global*/
+var util = require("util")
+var assert = require("assert")
+function now() { return new Date().getTime() }
+
+var slice = Array.prototype.slice
+var console
+var times = {}
+
+if (typeof global !== "undefined" && global.console) {
+    console = global.console
+} else if (typeof window !== "undefined" && window.console) {
+    console = window.console
+} else {
+    console = {}
+}
+
+var functions = [
+    [log, "log"],
+    [info, "info"],
+    [warn, "warn"],
+    [error, "error"],
+    [time, "time"],
+    [timeEnd, "timeEnd"],
+    [trace, "trace"],
+    [dir, "dir"],
+    [consoleAssert, "assert"]
+]
+
+for (var i = 0; i < functions.length; i++) {
+    var tuple = functions[i]
+    var f = tuple[0]
+    var name = tuple[1]
+
+    if (!console[name]) {
+        console[name] = f
+    }
+}
+
+module.exports = console
+
+function log() {}
+
+function info() {
+    console.log.apply(console, arguments)
+}
+
+function warn() {
+    console.log.apply(console, arguments)
+}
+
+function error() {
+    console.warn.apply(console, arguments)
+}
+
+function time(label) {
+    times[label] = now()
+}
+
+function timeEnd(label) {
+    var time = times[label]
+    if (!time) {
+        throw new Error("No such label: " + label)
+    }
+
+    delete times[label]
+    var duration = now() - time
+    console.log(label + ": " + duration + "ms")
+}
+
+function trace() {
+    var err = new Error()
+    err.name = "Trace"
+    err.message = util.format.apply(null, arguments)
+    console.error(err.stack)
+}
+
+function dir(object) {
+    console.log(util.inspect(object) + "\n")
+}
+
+function consoleAssert(expression) {
+    if (!expression) {
+        var arr = slice.call(arguments, 1)
+        assert.ok(false, util.format.apply(null, arr))
+    }
+}
+
+},{"util":"../../node_modules/util/util.js","assert":"../../node_modules/assert/assert.js"}],"index.js":[function(require,module,exports) {
 "use strict";
 
 require("core-js/modules/es6.array.copy-within.js");
@@ -8907,10 +10979,30 @@ var _alerts = require("./alerts");
 
 var _accountNav = require("./accountNav");
 
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+var _console = require("console");
 
-function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
 
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+// import {
+//   load,
+//   openModal,
+//   closeModal,
+//   saveEvent,
+//   deleteEvent,
+//   initButtons
+// } from './calendar';
+// const { google } = require('googleapis');
+// const { OAuth2 } = google.auth;
 // DOM ELEMENTS
 var mapBox = document.getElementById('map');
 var loginForm = document.querySelector('.form--login');
@@ -8919,8 +11011,15 @@ var phoneLogOutBtn = document.getElementById('phone-logout');
 var userDataForm = document.querySelector('.form-user-data');
 var userPasswordForm = document.querySelector('.form-user-password');
 var bookBtn = document.getElementById('book-studio');
-var registerForm = document.querySelector('.form--register');
-var sideBarHover = document.querySelector('.user-view__menu'); // DELEGATION
+var registerField = document.querySelector('.registration__field-8');
+var newLessonFieldset = document.querySelector('.registration__field-7');
+var firstStep = document.querySelector('.registration-student__1--p1'); /// ADD LESSON
+
+var row = document.querySelector('#student__table');
+var sideBarHover = document.querySelector('.user-view__menu'); /// PROGRESS BAR
+
+var progress = document.querySelector('.progress-bar-step');
+var progress_step = document.querySelectorAll('.progress-bar_li-span-number'); // DELEGATION
 
 if (mapBox) {
   var locations = JSON.parse(mapBox.dataset.locations);
@@ -8934,115 +11033,1020 @@ if (loginForm) loginForm.addEventListener('submit', function (e) {
   (0, _login.login)(email, password);
 });
 if (logOutBtn) logOutBtn.addEventListener('click', _login.logout);
-if (phoneLogOutBtn) phoneLogOutBtn.addEventListener('click', _login.logout); // if (sideBarHover)
-//   sideBarHover.addEventListener('mouseover', e => {
-//     e.preventDefault();
-//     // .side-bar__logo--favicon - take away
-//     // .side-bar__logo display flex
-//     // .side-nav span display flex
-//     // .side-nav__hide take away
-//     var sideNav = document.querySelector('.side-nav__hide svg');
-//     var logoFavicon = document.querySelector('.side-bar__logo--favicon img');
-//     var logoFull = document.querySelector('.side-bar__logo');
-//     var sideText = document.querySelector('.side-nav span');
-//     logoFavicon.style.height = null;
-//     logoFavicon.style.width = null;
-//     sideNav.style.height = null;
-//     sideNav.style.width = null;
-//     sideNav.style.margin = null;
-//     logoFull.style.display = 'flex';
-//     sideText.style.display = 'flex';
+if (phoneLogOutBtn) phoneLogOutBtn.addEventListener('click', _login.logout);
+var info_section = document.querySelectorAll('div .info__section'); // Load Calendar
+// initButtons();
+// load();
+// ///PRIVATE LESSONS FORM
+//Registration Class: Represents a registration
+// class Registration {
+//   constructor(fname, lname)
+// }
+//  Create unique ID
+// function uuid() {
+//   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+//     var r = (Math.random() * 16) | 0,
+//       v = c == 'x' ? r : (r & 0x3) | 0x8;
+//     return v.toString(16);
 //   });
+// }
+// var userID = uuid();
+// // Students Class
+// class Registration {
+//   constructor(
+//     student_fname,
+//     student_lname,
+//     relation,
+//     birthdate,
+//     relation_text,
+//     instrument,
+//     exp_type,
+//     exp_description,
+//     lesson_freq,
+//     lesson_dur,
+//     lesson_startdate,
+//     instructor,
+//     lesson_time
+//   ) {
+//     userID = user_Id;
+//     this.student_fname = student_fname;
+//     this.student_lname = student_lname;
+//     this.relation = relation;
+//     this.birthdate = birthdate;
+//     this.relation_text = relation_text;
+//     this.instrument = instrument;
+//     this.exp_type = exp_type;
+//     this.exp_description = exp_description;
+//     this.lesson_freq = lesson_freq;
+//     this.lesson_dur = lesson_dur;
+//     this.lesson_startdate = lesson_startdate;
+//     this.instructor = instructor;
+//     this.lesson_time = lesson_time;
+//   }
+// }
+// // UI Class: Handle UI Students
+// class UI {
+//   static displayStudents() {
+//     const students = Register.getStudents();
+//     students.forEach(student => UI.addStudentToList(student));
+//   }
+//   static addStudentToList(student) {
+//     const list = document.querySelector('#student-list');
+//     const row = document.createElement('tr');
+//     const name = `${student.student_fname}${student.student_lname}`.splice([0]);
+//     row.innerHTML = `
+//     <td>student &nbsp;${student.indexof + 1}</td>
+//       <td>${name}</td>
+//       <td>${student.instrument}</td>
+//       <td>${student.instructor}</td>
+//       <button class="info__student--button button__edit">Edit<svg class="info__student--svg"><use class="info__student--icon" xlink:href="/img/icons/icon.svg#icon-edit" viewBox="0 0 1000 1000"></use></svg></button>
+//       <button class="info__student--button button__delete">Delete<svg class="info__student--svg"><use class="info__student--icon" xlink:href="/img/icons/icon.svg#icon-delete"></use></svg></button><svg class="info__student--label-svg"><use class="info__student--icon" xlink:href="/img/icons/icon.svg#icon-more-vertical"></use></svg>
+//     `;
+//     list.appendChild(row);
+//   }
+//   static deleteStudent(el) {
+//     if (el.classList.contains('button__delete')) {
+//       el.parentElement.parentElement.remove();
+//     }
+//   }
+// static showAlert(message, className) {
+//   const div = document.createElement('div');
+//   div.className = `alert alert-${className}`;
+//   div.appendChild(document.createTextNode(message));
+//   const container = document.querySelector('.container');
+//   const form = document.querySelector('#student-list');
+//   container.insertBefore(div, form);
+//   // Vanish in 3 seconds
+//   setTimeout(() => document.querySelector('.alert').remove(), 3000);
+// }
+//   static clearFields() {
+//     document.querySelector('input[name="Student"]:checked').value = '';
+//     document.querySelector('#student-firstname').value = '';
+//     document.querySelector('#student-lastname').value = '';
+//     document.querySelector('#student-relationship').value = '';
+//     document.querySelector('#student-birthdate').value = '';
+//     document.querySelector('#student-instrument').value = '';
+//     document.querySelector('#student-experience').value = '';
+//     document.querySelector('#student-experience-description').value = '';
+//     document.querySelector('#lesson-frequency').value = '';
+//     document.querySelector('#lesson-duration').value = '';
+//     document.querySelector('#student-date').value = '';
+//     document.querySelector('#student-instructor').value = '';
+//     document.querySelector('#student-time').value = '';
+//   }
+// }
+// document.cookie = 'student_fname=Christie';
+// var arr = ['Jarred', 'Christie', 'Brit'];
+// var json_str = JSON.stringify(arr);
+// Cookies.remove = 'student_fname';
+// document.cookie('student_fname=', json_str);
 
-if (registerForm) registerForm.addEventListener('submit', /*#__PURE__*/function () {
-  var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(e) {
-    var firstName, lastName, name, phone, email, password, passwordConfirm;
-    return regeneratorRuntime.wrap(function _callee$(_context) {
-      while (1) {
-        switch (_context.prev = _context.next) {
-          case 0:
-            e.preventDefault();
-            firstName = document.getElementById('first_name').value;
-            lastName = document.getElementById('last_name').value;
-            name = firstName + ' ' + lastName;
-            phone = document.getElementById('phone_number').value;
-            email = document.getElementById('email').value;
-            password = document.getElementById('password').value;
-            passwordConfirm = document.getElementById('confirm_password').value;
-            _context.next = 10;
-            return (0, _signup.signup)({
-              name: name,
-              email: email,
-              phone: phone,
-              password: password,
-              passwordConfirm: passwordConfirm
-            });
+function setCook(name, value, exdays) {
+  var cookie = [name, '=', JSON.stringify(value)].join('');
+  var d = new Date();
+  d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
+  var expires = 'expires=' + d.toUTCString();
+  document.cookie = cookie + ';' + expires;
+}
 
-          case 10:
-          case "end":
-            return _context.stop();
-        }
-      }
-    }, _callee);
-  }));
+function readCookie(name) {
+  var nameEQ = name + '=';
+  var ca = document.cookie.split(';');
 
-  return function (_x) {
-    return _ref.apply(this, arguments);
-  };
-}());
-if (userDataForm) userDataForm.addEventListener('submit', function (e) {
-  e.preventDefault();
-  var form = new FormData();
-  form.append('name', document.getElementById('name').value);
-  form.append('email', document.getElementById('email').value);
-  form.append('photo', document.getElementById('photo').files[0]);
-  (0, _updateSettings.updateSettings)(form, 'data');
+  for (var i = 0; i < ca.length; i++) {
+    var c = ca[i];
+
+    while (c.charAt(0) == ' ') {
+      c = c.substring(1, c.length);
+    }
+
+    if (c.indexOf(nameEQ) === 0) {
+      return JSON.parse(c.substring(nameEQ.length, c.length));
+    }
+  }
+
+  return null;
+} // setCook('student_fname', `Christie, Red, Jarred`);
+// setCook('student_instructor', `Jane, John, George`);
+// setCook('student_instrument', `viola, violin, voice`);
+// let searchItem = cookieData.find(isItem);
+// let fname = readCookie('student_fname');
+// let instruct = readCookie('student_instructor');
+// let instrum = readCookie('student_instrument');
+// let names = obj.find(newItem);
+// function newItem(product) {
+// return product.qux === newItem.name;
+// // }
+// console.log(obj);
+// // console.log(obj.find('qux'));
+// console.log(ubj);
+// console.log(obj.split(','));
+// const fnames = fname.split(',');
+// const instructs = instruct.split(',');
+// const instrums = instrum.split(',');
+// console.log(obj);
+// document.cookie = ('student_fname', ['Jarred', 'Christie', 'Brit'], 50);
+// const name = `${document.cookie.student_fname}${student.student_lname}`.splice([
+//   0
+// ]);
+// function getCookie(fname) {
+//   var cookieArr = document.cookie.split(';');
+//   for (var i = 0; i < cookieArr.length; i++) {
+//     var cookiePair = cookieArr[i].split('=');
+//     if (fname == cookiePair[0].trim()) {
+//       return decodeURIComponent(cookiePair[1]);
+//     }
+//   }
+//   return null;
+// }
+// allCookies = document.cookie;
+// //Form values
+// // const form_admin = document.querySelector('input[class="Studet"]:checked')
+// //   .value;
+// const student_firstname = document.querySelector('#student-firstname').value;
+// const student_lastname = document.querySelector('#student-lastname').value;
+// const student_relationship = document.querySelector('.student-relationship')
+//   .value;
+// const student_birthdate = document.querySelector('#student-birthdate').value;
+// const student_instrument = document.querySelector('#student-instrument').value;
+// const student_experience = document.querySelector('#student-experience').value;
+// const student_experience_description = document.querySelector(
+//   '#student-experience-description'
+// ).value;
+// const student_lesson_frequency = document.querySelector('#lesson-frequency')
+//   .value;
+// const student_lesson_duration = document.querySelector('#lesson-duration')
+//   .value;
+// const student_date = document.querySelector('#student-date').value;
+// const student_instructor = document.querySelector('.student-instructor').value;
+// const student_time = document.querySelector('.student-time').value;
+//Add cookies from form fields
+// Original JavaScript code by Chirp Internet: chirpinternet.eu
+// Please acknowledge use of this code by including this header.
+
+
+var today = new Date();
+var expiry = new Date(today.getTime() + 30 * 24 * 3600 * 1000); // plus 30 days
+// function setCookie(name, value) {
+//   document.cookie =
+//     name + '=' + escape(value) + '; path=/; expires=' + expiry.toGMTString();
+// }
+// function storeValues(form) {
+//   setCookies('form_admin', form.form_admin.value);
+//   setCookies('student_fname', form.student_firstname.value);
+//   setCookies('student_lname', form.student_lastname.value);
+//   setCookies('birthdate', form.student_birthdate.value);
+//   setCookies('relation_text', form.student_relationship.value);
+//   setCookies('instrument', form.student_instrument.value);
+//   setCookies('exp_type', form.student_experience.value);
+//   setCookies('exp_description', form.student_experience_description.value);
+//   setCookies('lesson_freq', form.student_lesson_frequency.value);
+//   setCookies('lesson_dur', form.student_lesson_duration.value);
+//   setCookies('lesson_startdate', form.student_date.value);
+//   setCookies('instructor', form.student_instructor.value);
+//   setCookies('lesson_time', form.student_time.value);
+// }
+// student_fname === '' ||
+//   student_lname === '' ||
+//   relation === '' ||
+//   birthdate === '' ||
+//   relation_text === '' ||
+//   instrument === '' ||
+//   exp_type === '' ||
+//   exp_description === '' ||
+//   lesson_freq === '' ||
+//   lesson_dur === '' ||
+//   lesson_startdate === '' ||
+//   instructor === '' ||
+//   lesson_time;
+//Parse cookies to HTML
+// class Register {
+//   static getStudents() {
+//     let students;
+//     if (localStorage.getItem('students') === null) {
+//       students = [];
+//     } else {
+//       students = JSON.parse(localStorage.getItem('students'));
+//     }
+//     return students;
+//   }
+//   static addStudent(student) {
+//     const students = Register.getStudents();
+//     students.push(student);
+//     localStorage.setItem('students', JSON.stringify(students));
+//   }
+//   static removeStudent(user_Id) {
+//     const students = Register.getStudents();
+//     students.forEach((student, index) => {
+//       if (student.user_Id === user_Id) {
+//         students.splice(index, 1);
+//       }
+//     });
+//     localStorage.setItem('students', JSON.stringify(students));
+//   }
+// }
+// // Event: Display Books
+// document.addEventListener('DOMContentLoaded', UI.displayStudents);
+// // Event: Add a Book
+// document.querySelector('#pl-form').addEventListener('submit', e => {
+//   // Prevent actual submit
+//   e.preventDefault();
+// Get form values
+// const form_admin = document.querySelector('input[name="Student"]:checked').value = '';
+// document.querySelector('#student-firstname').value = '';
+// document.querySelector('#student-lastname').value = '';
+// document.querySelector('#student-relationship').value = '';
+// document.querySelector('#student-birthdate').value = '';
+// document.querySelector('#student-instrument').value = '';
+// document.querySelector('#student-experience').value = '';
+// document.querySelector('#student-experience-description').value = '';
+// document.querySelector('#lesson-frequency').value = '';
+// document.querySelector('#lesson-duration').value = '';
+// document.querySelector('#student-date').value = '';
+// document.querySelector('#student-instructor').value = '';
+// document.querySelector('#student-time').value = '';
+//   // Validate
+//   if (
+//     student_fname === '' ||
+//     student_lname === '' ||
+//     relation === '' ||
+//     birthdate === '' ||
+//     relation_text === '' ||
+//     instrument === '' ||
+//     exp_type === '' ||
+//     exp_description === '' ||
+//     lesson_freq === '' ||
+//     lesson_dur === '' ||
+//     lesson_startdate === '' ||
+//     instructor === '' ||
+//     lesson_time
+//   ) {
+//     UI.showAlert('fail', 'Please fill in all fields', 3);
+//   } else {
+//     // Instatiate book
+//     const student = new Student(
+//       student_fname,
+//       student_lname,
+//       relation,
+//       birthdate,
+//       relation_text,
+//       instrument,
+//       exp_type,
+//       exp_description,
+//       lesson_freq,
+//       lesson_dur,
+//       lesson_startdate,
+//       instructor,
+//       lesson_time
+//     );
+//     // Add Book to UI
+//     UI.addStudentToList(student);
+//     // Add book to store
+//     Register.addStudent(student);
+//     // Show success message
+//     UI.showAlert('success', 'Student Added', 3);
+//     // Clear fields
+//     UI.clearFields();
+//   }
+// });
+// // Event: Remove a Book
+// document.querySelector('#student-list').addEventListener('click', e => {
+//   // Remove book from UI
+//   UI.deleteStudent(e.target);
+//   // Remove book from store
+//   Store.removeStudent(
+//     e.target.parentElement.previousElementSibling.textContent
+//   );
+//   // Show success message
+//   UI.showAlert('success', 'Student Removed', 3);
+// });
+// // const submitBtn = document.querySelectorAll('.submit');
+// // const progress_li = document.querySelector('.progress-bar_li');
+// // const fieldset = document.getElementsByTagName('fieldset');
+// // let prevBtn = document.querySelectorAll('.previous');
+// // let nextBtn = document.querySelectorAll('.next');
+
+document.querySelector('body').addEventListener('click', function (event) {
+  if (event.target.matches('.next')) {
+    changeStep('next');
+    navSteps();
+  }
+
+  if (event.target.matches('.previous')) {
+    changeStep('previous');
+    navSteps();
+  }
+
+  if (event.target.matches('.checkout-option')) {
+    changeStep('checkout');
+    navSteps();
+  } // if (
+  //   event.target.matches(
+  //     '.form__label--add, .form__input--add, .form__span--add'
+  //   )
+  // ) {
+  //   // console.log('hi');
+  //   let index = 0;
+  //   // let addIndex = 0;
+  //   // const addSteps = Array.from(document.querySelectorAll('.form__label--add'));
+  //   // addIndex = addSteps.indexOf()
+  //   const addBtn = document.querySelector('.form__label--add');
+  //   // addBtn.remove();
+  //   const active_fieldset = document.querySelector('.activeFieldset');
+  //   const steps = Array.from(
+  //     document.querySelectorAll('form .registration__field')
+  //   );
+  //   index = steps.indexOf(active_fieldset);
+  //   steps[index].classList.remove('activeFieldset');
+  // addStudent(index);
+  // }
+
+
+  if (event.target.matches('.addLesson')) {
+    addLesson();
+    navSteps();
+  } // if (event.target.matches('info__section')) {
+  //   return;
+  // }
+
+
+  if (!event.target.innerHTML.includes('studentInfo-1')) {} else {
+    var info = document.querySelectorAll('.studentInfo-1');
+    var infoRemove = document.querySelectorAll('.info__section');
+    infoRemove.forEach(function (e) {
+      e.classList.remove('info__active');
+    });
+  }
+
+  if (event.target.matches('.button__edit')) {
+    var editSection = document.querySelectorAll('.info__edit');
+    var editBtn = document.querySelectorAll('.button__edit');
+    editSection.forEach(function (e) {
+      e.classList.remove('edit__active');
+    });
+    editBtn.forEach(function (item) {
+      var index = Array.from(editBtn).indexOf(item);
+      var editClass = Array.from(document.querySelectorAll('.info__edit'));
+      editClass[index].classList.add('edit__active');
+    });
+  } // var deleteLesson = document.querySelectorAll('.button__delete');
+  // Array.from(deleteLesson).forEach(lesson => {
+  //   lesson.addEventListener;
+  //   'click',
+  //     function(event) {
+  //       console.log(event);
+  //       document.cookie = 'usernam=; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+  //       loadCookie();
+  //     };
+  // });
+  // var deleteLesson = document.querySelectorAll('.button__delete');
+  // const buttonDelete = document.querySelectorAll('.button__delete');
+  // checks.forEach(function(check) {
+  //   check.addEventListener('click', checkIndex);
+  // });
+  // function checkIndex(event) {
+  //   console.log(Array.from(checks).indexOf(event.target));
+  // }
+  // if (event.target.closest('.button__delete')) {
+  //   console.log(event);
+  //   const buttonDelete = document.querySelectorAll('.button__delete');
+  //   // const editBtn = document.querySelectorAll('.button__edit');
+  //   buttonDelete.forEach(e => {
+  //     console.log(e);
+  //     // const index = Array.from(buttonDelete).indexOf(e);
+  //     //       // checks.forEach(function(check) {
+  //     //   check.addEventListener('click', checkIndex);
+  //     // });
+  //     // console.log(index);
+  //     // console.log(this.buttonDelete);
+  //     console.log(Array.from(buttonDelete).indexOf(event));
+  //   });
+  // editBtn.forEach(item => {
+  //   const index = Array.from(editBtn).indexOf(item);
+  //   const editClass = Array.from(document.querySelectorAll('.info__edit'));
+  //   editClass[index].classList.add('edit__active');
+  // });
+  // Array.from(deleteLesson).forEach(lesson => {
+  //   console.log(this.lesson);
+  // });
+  // }
+  //   const studentInfo = document.querySelectorAll('.studentInfo');
+  //   const deleteBtn = document.querySelectorAll('.button__delete');
+  // }
+
+
+  if (event.target.matches('.info__student--label-svg, .info__student--label, .info__student--icon')) {
+    var _info = document.querySelectorAll('.info__student--label-svg');
+
+    var _infoRemove = document.querySelectorAll('.info__section');
+
+    _infoRemove.forEach(function (e) {
+      e.classList.remove('info__active');
+    });
+
+    _info.forEach(function (item) {
+      var index = Array.from(_info).indexOf(item);
+      var infoClass = Array.from(document.querySelectorAll('.info__section'));
+      infoClass[index].classList.add('info__active');
+    });
+  }
+
+  if (event.target.matches('.form__label--delete, .form__input--delete, .form__span--delete')) {
+    var el = document.querySelectorAll('.info__section');
+    console.log(event.target.outerHTML);
+
+    var index = _toConsumableArray(el).indexOf(event.target.outerHTML.classList.contains('info__section'));
+
+    var deleteArray = Array.from(document.querySelectorAll('.delete-student'));
+    console.log(deleteArray.indexOf(event.target));
+  } // if (event.target.matches('.')
+
 });
-if (userPasswordForm) userPasswordForm.addEventListener('submit', /*#__PURE__*/function () {
-  var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(e) {
-    var passwordCurrent, password, passwordConfirm;
-    return regeneratorRuntime.wrap(function _callee2$(_context2) {
-      while (1) {
-        switch (_context2.prev = _context2.next) {
-          case 0:
-            e.preventDefault();
-            document.querySelector('.btn--save-password').textContent = 'Updating...';
-            passwordCurrent = document.getElementById('password-current').value;
-            password = document.getElementById('password').value;
-            passwordConfirm = document.getElementById('password-confirm').value;
-            _context2.next = 7;
-            return (0, _updateSettings.updateSettings)({
-              passwordCurrent: passwordCurrent,
-              password: password,
-              passwordConfirm: passwordConfirm
-            }, 'password');
+var currentActive = 1;
 
-          case 7:
-            document.querySelector('.btn--save-password').textContent = 'Save password';
-            document.getElementById('password-current').value = '';
-            document.getElementById('password').value = '';
-            document.getElementById('password-confirm').value = '';
+function navSteps() {
+  var steps = Array.from(document.querySelectorAll('form .registration__field'));
+  var active_fieldset = document.querySelector('.activeFieldset');
+  var submit = document.querySelector('#submit');
+  var next = document.querySelector('#next');
+  var previous = document.querySelector('#previous');
+  var formNav = document.querySelector('.formNav'); // const newLesson = document.querySelector('#newLesson');
+  // const newLesson = document.querySelector('form .registration__field-7');
 
-          case 11:
-          case "end":
-            return _context2.stop();
-        }
-      }
-    }, _callee2);
-  }));
+  var stepsIndex = steps.indexOf(active_fieldset);
+  console.log(steps.length);
 
-  return function (_x2) {
-    return _ref2.apply(this, arguments);
-  };
-}());
-if (bookBtn) bookBtn.addEventListener('click', function (e) {
-  e.target.textContent = 'Processing...';
-  var studioId = e.target.dataset.studioId;
-  (0, _stripe.bookStudio)(studioId);
+  if (stepsIndex >= 1 && previous === null) {
+    next.insertAdjacentHTML('beforebegin', '<div class="btn-small btn-small__reg previous" id="previous">Previous</div>');
+  }
+
+  if (stepsIndex < 1) {
+    // formNav.parentNode.removeChild(previous);
+    previous.remove();
+    next.classList.add('.next-alone');
+  }
+
+  if (stepsIndex + 1 >= steps.length) {
+    next.remove();
+    previous.insertAdjacentHTML('afterend', '<div class="btn-small btn-small__reg submit" id="submit">Submit</div>');
+  } // if (stepsIndex < 6) {
+  //   newLesson.remove();
+  //   previous.insertAdjacentHTML(
+  //     'afterend',
+  //     '<div class="btn-small btn-small__reg next id="next">Next</div>'
+  //   );
+  // }
+  // if (stepsIndex > 6) {
+  //   newLesson.remove();
+  //   previous.insertAdjacentHTML(
+  //     'afterend',
+  //     '<div class="btn-small btn-small__reg next id="next">Next</div>'
+  //   );
+  // }
+  // if (stepsIndex == 6 && newLesson === null) {
+  //   next.remove();
+  //   previous.insertAdjacentHTML(
+  //     'afterend',
+  //     '<div class="btn-small btn-small__reg addLesson next" id="newLesson">Add Lesson</div>'
+  //   );
+  // }
+
+
+  if (stepsIndex + 1 < steps.length && next === null) {
+    submit.remove();
+    previous.insertAdjacentHTML('afterend', '<div class="btn-small btn-small__reg next" id="next">Next</div>');
+  }
+
+  console.log(stepsIndex); // const stepComplete = document.querySelectorAll(`.progress-span`);
+  // console.log(document.querySelectorAll(`.progress-span`));
+  // stepComplete.forEach(element => {
+  //   console.log(stepsIndex);
+  //
+  // console.log(
+  //   document.querySelectorAll(`.progress-bar-step li:nth-child(${stepsIndex})`)
+  // );
+  // document.querySelectorAll(
+  //   `.progress-bar-step li:nth-child(${stepsIndex})`
+  // ).style.cssText =
+  //   'width: 9.7142857%; border-top: 1px solid #0c6a96; z-index: -2';
+  //
+
+  currentActive = stepsIndex;
+  update();
+}
+
+function update() {
+  progress_step.forEach(function (step, idx) {
+    if (idx < currentActive) {
+      step.classList.add('active');
+    } else {
+      step.classList.remove('active');
+    } // console.log(step.length);
+
+
+    var actives = document.querySelectorAll('.active');
+    progress.style.width = (actives.length - 1) / 7 * 100 + '%';
+  });
+} //   }
+// });
+
+
+function changeStep(btn) {
+  var index = 0;
+  var active_fieldset = document.querySelector('.activeFieldset');
+  var steps = Array.from(document.querySelectorAll('form .registration__field'));
+  var registration_fieldset = document.getElementsByClassName('registration__field');
+  index = steps.indexOf(active_fieldset);
+  console.log(index);
+  steps[index].classList.remove('activeFieldset');
+
+  if (btn === 'next') {
+    index++;
+    registration_fieldset[index].classList.add('activeFieldset');
+  } else if (btn === 'previous') {
+    index = index - 1;
+    registration_fieldset[index].classList.add('activeFieldset');
+  } else if (btn === 'checkout') {
+    index = 7;
+    registerField.classList.add('activeFieldset');
+    document.querySelector('.registration__field-7').classList.remove('activeFieldset');
+  }
+
+  console.log(index);
+  console.log(registration_fieldset[index]); // index = '';
+} // function removeElementsByClass(className) {
+//   const elements = document.getElementsByClassName(className);
+//   while (elements.length > 0) {
+//     elements[0].parentNode.removeChild(elements[0]);
+//   }
+// }
+
+
+var element = document.querySelector('.lesson'); //Get active table
+
+var lessonHeader = document.querySelector('.lesson_header');
+
+function loadCookie() {
+  // Get table header
+  var lessonCookie = document.querySelector('.lessonCookie'); //delete current UI elements
+
+  var elements = Array.from(document.querySelectorAll('.lesson'));
+  console.log(element);
+  console.log(elements);
+  console.log(Array.from(document.querySelectorAll('.lesson')));
+  console.log(document.querySelectorAll('.lesson'));
+  console.log(elements.length); //table
+
+  var tableHeader = "<tr class=\"lessonCookie\"><th>Student</th><th>Instrument</th><th>Instructor</th><th></th></tr>";
+
+  if (element !== null) {
+    element.remove(); // tableHeader.remove();
+  }
+
+  if (elements.length > 0) {
+    elements.forEach(function (elements) {
+      elements.remove();
+    });
+  } //remove table
+  // lessonHeader.classList.remove('student__table--active');
+
+
+  console.log('yoyo'); //Get values from form
+
+  var sFnames = readCookie('student_fname');
+  var sLnames = readCookie('student_lname');
+  var sRelation = readCookie('student_relation');
+  var sDOB = readCookie('student_birthdate');
+  var sIntrum = readCookie('student_instrument'); // setCookie();
+  // setCookie();
+  // setCookie();
+  // setCookie();
+  // setCookie();
+  // setCookie();
+  // setCookie();
+
+  console.log(lessonCookie);
+
+  if (readCookie('student_fname') !== null) {
+    if (readCookie('student_fname').length > 0 && lessonCookie === null) {
+      row.insertAdjacentHTML('afterbegin', tableHeader);
+    }
+  }
+
+  if (Array.isArray(sFnames)) {
+    // lessonHeader.classList.add('student__table--active');
+    var lessons = [];
+    var lessonAmount = sFnames.length;
+
+    for (var i = 1; i <= lessonAmount; i++) {
+      var input = "\n        <tr class=\"lesson\">\n      <td>".concat(sFnames[i - 1], "</td>\n      <td>").concat(sLnames[i - 1], "</td>\n      <td>").concat(sLnames[i - 1], "</td>\n      <td class=\"student__buttons\"><button class=\"student__button button__more\"><svg class=\"info__student--svg\"><use class=\"info__student--icon\" xlink:href=\"/img/icons/icon.svg#icon-more-vertical\"></use></svg></button><button class=\"student__button button__edit\"><svg class=\"info__student--svg\"><use class=\"info__student--icon\" xlink:href=\"/img/icons/icon.svg#icon-edit\" viewBox=\"0 0 1000 1000\"></use></svg></button><button class=\"student__button button__delete\"><svg class=\"info__student--svg\"><use class=\"info__student--icon\" xlink:href=\"/img/icons/icon.svg#icon-delete\"></use></svg></button></td></tr>");
+      lessons.push(input);
+    }
+
+    row.insertAdjacentHTML('beforeend', lessons.join(''));
+  } else if (sFnames !== null) {
+    lessonHeader.classList.add('student__table--active');
+
+    if (element !== null) {
+      element.remove();
+    }
+
+    if (elements.length > 1) {
+      elements.forEach(function (elements) {
+        elements.remove();
+      });
+    }
+
+    row.insertAdjacentHTML('beforeend', "\n  <tr class=\"lesson\">\n<td>".concat(sFnames, "</td>\n<td>").concat(sLnames, "</td>\n<td>").concat(sLnames, "</td>\n<td class=\"student__buttons\"><button class=\"student__button button__more\"><svg class=\"info__student--svg\"><use class=\"info__student--icon\" xlink:href=\"/img/icons/icon.svg#icon-more-vertical\"></use></svg></button><button class=\"student__button button__edit\"><svg class=\"info__student--svg\"><use class=\"info__student--icon\" xlink:href=\"/img/icons/icon.svg#icon-edit\" viewBox=\"0 0 1000 1000\"></use></svg></button><button class=\"student__button button__delete\"><svg class=\"info__student--svg\"><use class=\"info__student--icon\" xlink:href=\"/img/icons/icon.svg#icon-delete\"></use></svg></button></td></tr>"));
+  } // else if (typeof sFnames == 'undefined') {
+  //   lessonHeader.classList.remove('student__table--active');
+  // }
+
+
+  if (newLessonFieldset) {
+    newLessonFieldset.classList.remove('activeFieldset');
+    firstStep.classList.add('activeFieldset');
+    var btnDeleteRefresh = document.querySelectorAll('.button__delete');
+    btnDeleteRefresh.forEach(function (check) {
+      check.addEventListener('click', deleteLesson);
+    });
+  }
+
+  if (readCookie('student_fname') !== null) {
+    if (readCookie('student_fname').length === 0 && lessonCookie !== null) {
+      console.log('123');
+      lessonCookie.remove();
+    }
+  }
+}
+
+loadCookie();
+
+function loadListener() {
+  var btnrefreshDelete = document.querySelector('.button__delete');
+  console.log(btnrefreshDelete);
+  btnrefreshDelete.addEventListener('click', deleteLesson);
+}
+
+function addLesson() {
+  //Form values
+  // const form_admin = document.querySelector('input[class="Studet"]:checked')
+  //   .value;
+  var student_firstname = document.querySelector('#student-firstname').value;
+  var student_lastname = document.querySelector('#student-lastname').value;
+  var student_relationship = document.querySelector('.student-relationship').value;
+  var student_birthdate = document.querySelector('#student-birthdate').value;
+  var student_instrument = document.querySelector('#student-instrument').value;
+  var student_experience = document.querySelector('#student-experience').value;
+  var student_experience_description = document.querySelector('#student-experience-description').value;
+  var student_lesson_frequency = document.querySelector('#lesson-frequency').value;
+  var student_lesson_duration = document.querySelector('#lesson-duration').value;
+  var student_date = document.querySelector('#student-date').value;
+  var student_instructor = document.querySelector('.student-instructor').value;
+  var student_time = document.querySelector('.student-time').value;
+  var fname = readCookie('student_fname'); // console.log(fname.length);
+  // console.log(Array.isArray(fname));
+  // console.log(fname.length > 5);
+  // const lessonAmount = fname.length;
+
+  if (fname === null || fname === '') {
+    console.log(fname); // let sFnamesArray = [];
+    // let sLnamesArray = [];
+    // let sRelationArray = [];
+    // let sDOBArray = [];
+    // let sIntrumArray = [];
+    // let sFnames = readCookie('student_fname');
+    // let sLnames = readCookie('student_lname');
+    // let sRelation = readCookie('student_relation');
+    // let sDOB = readCookie('student_birthdate');
+    // let sIntrum = readCookie('student_instrument');
+    // console.log(sFnames);
+    // console.log(student_firstname.split(','));
+    // const fNames = sFnamesArray.push(sFnames, student_firstname);
+    // const lNames = sLnamesArray.push(sLnames, student_lastname);
+    // const relations = sRelationArray.push(sRelation, student_relationship);
+    // const bDates = sDOBArray.push(sDOB, student_birthdate);
+    // const instrums = sIntrumArray.push(sIntrum, student_instrument);
+    // console.log(fNames);
+    // console.log(sFnamesArray);
+    // setCook('student_fname', fNames);
+    // setCook('student_lname', lNames);
+    // setCook('student_relation', relations);
+    // setCook('student_birthdate', bDates);
+    // setCook('student-instrument', instrums);
+
+    setCook('student_fname', student_firstname, 3);
+    setCook('student_lname', student_lastname, 3);
+    setCook('student_relation', student_relationship, 3);
+    setCook('student_birthdate', student_birthdate, 3);
+    setCook('student_instrument', student_instrument, 3);
+    loadCookie();
+  } else {
+    if (Array.isArray(fname) && fname.length >= 5) {
+      changeStep('checkout');
+      (0, _alerts.showAlert)('access-denied', 'Cannot add more than 5 students at a time');
+    } else if (Array.isArray(fname) && fname.length > 1) {
+      console.log(fname.length);
+      var sFnamesArray = [];
+      var sLnamesArray = [];
+      var sRelationArray = [];
+      var sDOBArray = [];
+      var sIntrumArray = [];
+      var sFnames = readCookie('student_fname');
+      var sLnames = readCookie('student_lname');
+      var sRelation = readCookie('student_relation');
+      var sDOB = readCookie('student_birthdate');
+      var sIntrum = readCookie('student_instrument');
+      console.log(sFnames); // console.log(sFnamesArray.split(','));
+
+      var fNames = sFnamesArray.push(sFnames, student_firstname);
+      var lNames = sLnamesArray.push(sLnames, student_lastname);
+      var relations = sRelationArray.push(sRelation, student_relationship);
+      var bDates = sDOBArray.push(sDOB, student_birthdate);
+      var instrums = sIntrumArray.push(sIntrum, student_instrument);
+      console.log(fNames);
+      console.log(sFnamesArray);
+      setCook('student_fname', sFnamesArray.flat(), 3);
+      setCook('student_lname', sLnamesArray.flat());
+      setCook('student_relation', sRelationArray.flat(), 3);
+      setCook('student_birthdate', sDOBArray.flat(), 3);
+      setCook('student_instrument', sIntrumArray.flat(), 3); // const fnames = fname.split(',');
+
+      loadCookie(); // else if (
+      //   student_firstname === '' ||
+      //   student_lastname === '' ||
+      //   student_relationship === '' ||
+      //   student_birthdate === '' ||
+      //   student_instrument === '' ||
+      //   student_experience === '' ||
+      //   // student_experience_description === '' ||
+      //   student_lesson_frequency === '' ||
+      //   student_lesson_duration === '' ||
+      //   student_date === '' ||
+      //   student_instructor === '' ||
+      //   student_time === ''
+      // ) {
+      //   cl
+      //   return 'all fields must be completed';
+      // }
+      // } else {
+      //   // if (student_experience_description === '') {
+      //   //   student_experience_description.value = 'No Content';
+      //   // }
+      //   console.log('sfe');
+      //   setCook('student_fname', student_firstname);
+      //   setCook('student_lname', student_lastname);
+      //   setCook('student_relation', student_relationship);
+      //   setCookie('student_birthdate', student_birthdate);
+      //   setCookie('student-instrument', student_instrument);
+      //   loadCookie();
+      // }
+    } else {
+      var _sFnamesArray = [];
+      var _sLnamesArray = [];
+      var _sRelationArray = [];
+      var _sDOBArray = [];
+      var _sIntrumArray = [];
+
+      var _sFnames = readCookie('student_fname');
+
+      var _sLnames = readCookie('student_lname');
+
+      var _sRelation = readCookie('student_relation');
+
+      var _sDOB = readCookie('student_birthdate');
+
+      var _sIntrum = readCookie('student_instrument');
+
+      console.log(_sFnames);
+      console.log(student_firstname.split(','));
+
+      var _fNames = _sFnamesArray.push(_sFnames, student_firstname);
+
+      var _lNames = _sLnamesArray.push(_sLnames, student_lastname);
+
+      var _relations = _sRelationArray.push(_sRelation, student_relationship);
+
+      var _bDates = _sDOBArray.push(_sDOB, student_birthdate);
+
+      var _instrums = _sIntrumArray.push(_sIntrum, student_instrument);
+
+      console.log(_sFnamesArray.flat());
+      console.log(_fNames);
+      setCook('student_fname', _sFnamesArray.flat(), 3);
+      setCook('student_lname', _sLnamesArray.flat(), 3);
+      setCook('student_relation', _sRelationArray.flat(), 3);
+      setCook('student_birthdate', _sDOBArray.flat());
+      setCook('student_instrument', _sIntrumArray.flat(), 3); // console.log(lessonsLength);
+      // const fnames = fname.split(',');
+
+      loadCookie();
+      loadListener();
+    }
+  } // var btnDelete = document.querySelectorAll('.button__delete');
+  // btnDelete.forEach(function(check) {
+  //   check.addEventListener('click', deleteLesson);
+  // });
+
+} // checkCookie();
+// function deleteLesson() {}
+
+
+function updateLesson() {} //   } else if (fname != null) {
+//     row.insertAdjacentHTML(
+//       'beforeend',
+//       `
+//       <tr>
+//     <td>${sFnames}</td>
+//     <td>${sLnames}</td>
+//     <td>${sLnames}</td>
+//     <td class="student__buttons"><button class="student__button button__more"><svg class="info__student--svg"><use class="info__student--icon" xlink:href="/img/icons/icon.svg#icon-more-vertical"></use></svg></button><button class="student__button button__edit"><svg class="info__student--svg"><use class="info__student--icon" xlink:href="/img/icons/icon.svg#icon-edit" viewBox="0 0 1000 1000"></use></svg></button><button class="student__button button__delete"><svg class="info__student--svg"><use class="info__student--icon" xlink:href="/img/icons/icon.svg#icon-delete"></use></svg></button></td></tr>`
+//     );
+//   } else if ((fname = null)) {
+//     return;
+//     // } else {
+//     //   user = prompt('Please enter your name:', '');
+//     //   if (user != '' && user != null) {
+//     //     setCookie('username', user, 365);
+//     //   }
+//   }
+// checkCookie();
+// function addStudent(index) {
+//   let students = Array.from(document.querySelectorAll('form student'));
+//   let currentStudent = students.length;
+//   let student = document.querySelector(`.student-${currentStudent}`);
+//   let studentInfo = document.querySelector(`.studentInfo-${currentStudent}`);
+//   let studentIndex = students.length + 1;
+// student.insertAdjacentHTML(
+//   'afterend',
+// );
+// studentInfo.insertAdjacentHTML(
+//   'afterend',
+// `<div class="info__section studentInfo-${studentIndex} "><div class="info__price info">$0<span>&nbsp;/&nbsp;lesson</span><svg class="info__popup--icon-svg info__popup-dur"><use class="info__popup--icon" xlink:href="/img/icons/icon.svg#icon-info"></use></svg><div class="info__label info__popup info__popup-dur--text">For recurring lessons, this is a semester long commitment.  You can pay for the entire semester or on a monthly basis(pro-rated if needed for first and last month).  You</div></div><div class="includes info">Free 30-minute trial<svg class="info__popup--icon-svg info__popup-trial"><use class="info__popup--icon" xlink:href="/img/icons/icon.svg#icon-info"></use></svg><div class="info__label info__popup info__popup-trial--text">Your first lesson will be a 30-minute free trial lesson. <p>You will have 2 days after this scheduled lesson to cancel or change instructors.  We will send you a follow-up email directly after your lesson if you wish to take action on a cancelation or swap!</p></div></div><div class="semester-end-date info">Last lesson of semester: <span>&nbsp;June 5th</span><svg class="info__popup--icon-svg info__popup-ll"><use class="info__popup--icon" xlink:href="/img/icons/icon.svg#icon-info"></use></svg><div class="info__label info__popup info__popup-ll--text">This would be your last lesson of the semester, given the frequency you chose.</div></div><div class="recital-dates info">Recital dates:&nbsp; <span> June 5th, 2022</span><span>&nbsp;and June 6th, 2022</span><svg class="info__popup--icon-svg info__popup-rec"><use class="info__popup--icon" xlink:href="/img/icons/icon.svg#icon-info"></use></svg><div class="info__label info__popup info__popup-rec--text"><span>Students&nbsp;</span> are eligible to perform in our seasonal recital. Our recital dates are&nbsp;<span>June 5th, 2022</span><span>&nbsp;and June 6th, 2022</span><p>You will have the option to claim your recital date once enrolled.</p></div></div><div class="delete-student"><label class="form__label--option form__label--delete" for="delete-student">Student ${studentIndex} <span>:&nbsp;Jarred</span><input class="form__input--option form__input--delete" type="checkbox" name="add-student"><span class="form__span--delete delete-${studentIndex}">−</span></label></div></div>`;
+// );
+// [...prevBtn], [...nextBtn];
+// studentArray.push('student');
+// }
+// const checkboxes = document.getElementsByTagName('input');
+// checkboxes.preventDefault();
+// prevBtn = document.querySelectorAll('.previous');
+// nextBtn = document.querySelectorAll('.next');
+// // SIGNUP FORM
+// if (registerForm)
+//   registerForm.addEventListener('submit', async e => {
+//     e.preventDefault();
+//     let firstName = document.getElementById('first_name').value;
+//     let lastName = document.getElementById('last_name').value;
+//     const name = firstName + ' ' + lastName;
+//     const phone = document.getElementById('phone_number').value;
+//     const email = document.getElementById('email').value;
+//     const password = document.getElementById('password').value;
+//     const passwordConfirm = document.getElementById('confirm_password').value;
+//     await signup({ name, email, phone, password, passwordConfirm });
+//   });
+// if (userDataForm)
+//   userDataForm.addEventListener('submit', e => {
+//     e.preventDefault();
+//     const form = new FormData();
+//     form.append('name', document.getElementById('name').value);
+//     form.append('email', document.getElementById('email').value);
+//     form.append('photo', document.getElementById('photo').files[0]);
+//     updateSettings(form, 'data');
+//   });
+// if (userPasswordForm)
+//   userPasswordForm.addEventListener('submit', async e => {
+//     e.preventDefault();
+//     document.querySelector('.btn--save-password').textContent = 'Updating...';
+//     const passwordCurrent = document.getElementById('password-current').value;
+//     const password = document.getElementById('password').value;
+//     const passwordConfirm = document.getElementById('password-confirm').value;
+//     await updateSettings(
+//       { passwordCurrent, password, passwordConfirm },
+//       'password'
+//     );
+//     document.querySelector('.btn--save-password').textContent = 'Save password';
+//     document.getElementById('password-current').value = '';
+//     document.getElementById('password').value = '';
+//     document.getElementById('password-confirm').value = '';
+//   });
+// if (bookBtn)
+//   bookBtn.addEventListener('click', e => {
+//     e.target.textContent = 'Processing...';
+//     const { studioId } = e.target.dataset;
+//     bookStudio(studioId);
+//   });
+// const alertMessage = document.querySelector('body').dataset.alert;
+// if (alertMessage) showAlert('success', alertMessage, 20);
+
+
+var btnDelete = document.querySelectorAll('.button__delete');
+btnDelete.forEach(function (check) {
+  check.addEventListener('click', deleteLesson);
 });
-var alertMessage = document.querySelector('body').dataset.alert;
-if (alertMessage) (0, _alerts.showAlert)('success', alertMessage, 20);
-},{"core-js/modules/es6.array.copy-within.js":"../../node_modules/core-js/modules/es6.array.copy-within.js","core-js/modules/es6.array.fill.js":"../../node_modules/core-js/modules/es6.array.fill.js","core-js/modules/es6.array.filter.js":"../../node_modules/core-js/modules/es6.array.filter.js","core-js/modules/es6.array.find.js":"../../node_modules/core-js/modules/es6.array.find.js","core-js/modules/es6.array.find-index.js":"../../node_modules/core-js/modules/es6.array.find-index.js","core-js/modules/es7.array.flat-map.js":"../../node_modules/core-js/modules/es7.array.flat-map.js","core-js/modules/es6.array.from.js":"../../node_modules/core-js/modules/es6.array.from.js","core-js/modules/es7.array.includes.js":"../../node_modules/core-js/modules/es7.array.includes.js","core-js/modules/es6.array.iterator.js":"../../node_modules/core-js/modules/es6.array.iterator.js","core-js/modules/es6.array.map.js":"../../node_modules/core-js/modules/es6.array.map.js","core-js/modules/es6.array.of.js":"../../node_modules/core-js/modules/es6.array.of.js","core-js/modules/es6.array.slice.js":"../../node_modules/core-js/modules/es6.array.slice.js","core-js/modules/es6.array.sort.js":"../../node_modules/core-js/modules/es6.array.sort.js","core-js/modules/es6.array.species.js":"../../node_modules/core-js/modules/es6.array.species.js","core-js/modules/es6.date.to-primitive.js":"../../node_modules/core-js/modules/es6.date.to-primitive.js","core-js/modules/es6.function.has-instance.js":"../../node_modules/core-js/modules/es6.function.has-instance.js","core-js/modules/es6.function.name.js":"../../node_modules/core-js/modules/es6.function.name.js","core-js/modules/es6.map.js":"../../node_modules/core-js/modules/es6.map.js","core-js/modules/es6.math.acosh.js":"../../node_modules/core-js/modules/es6.math.acosh.js","core-js/modules/es6.math.asinh.js":"../../node_modules/core-js/modules/es6.math.asinh.js","core-js/modules/es6.math.atanh.js":"../../node_modules/core-js/modules/es6.math.atanh.js","core-js/modules/es6.math.cbrt.js":"../../node_modules/core-js/modules/es6.math.cbrt.js","core-js/modules/es6.math.clz32.js":"../../node_modules/core-js/modules/es6.math.clz32.js","core-js/modules/es6.math.cosh.js":"../../node_modules/core-js/modules/es6.math.cosh.js","core-js/modules/es6.math.expm1.js":"../../node_modules/core-js/modules/es6.math.expm1.js","core-js/modules/es6.math.fround.js":"../../node_modules/core-js/modules/es6.math.fround.js","core-js/modules/es6.math.hypot.js":"../../node_modules/core-js/modules/es6.math.hypot.js","core-js/modules/es6.math.imul.js":"../../node_modules/core-js/modules/es6.math.imul.js","core-js/modules/es6.math.log1p.js":"../../node_modules/core-js/modules/es6.math.log1p.js","core-js/modules/es6.math.log10.js":"../../node_modules/core-js/modules/es6.math.log10.js","core-js/modules/es6.math.log2.js":"../../node_modules/core-js/modules/es6.math.log2.js","core-js/modules/es6.math.sign.js":"../../node_modules/core-js/modules/es6.math.sign.js","core-js/modules/es6.math.sinh.js":"../../node_modules/core-js/modules/es6.math.sinh.js","core-js/modules/es6.math.tanh.js":"../../node_modules/core-js/modules/es6.math.tanh.js","core-js/modules/es6.math.trunc.js":"../../node_modules/core-js/modules/es6.math.trunc.js","core-js/modules/es6.number.constructor.js":"../../node_modules/core-js/modules/es6.number.constructor.js","core-js/modules/es6.number.epsilon.js":"../../node_modules/core-js/modules/es6.number.epsilon.js","core-js/modules/es6.number.is-finite.js":"../../node_modules/core-js/modules/es6.number.is-finite.js","core-js/modules/es6.number.is-integer.js":"../../node_modules/core-js/modules/es6.number.is-integer.js","core-js/modules/es6.number.is-nan.js":"../../node_modules/core-js/modules/es6.number.is-nan.js","core-js/modules/es6.number.is-safe-integer.js":"../../node_modules/core-js/modules/es6.number.is-safe-integer.js","core-js/modules/es6.number.max-safe-integer.js":"../../node_modules/core-js/modules/es6.number.max-safe-integer.js","core-js/modules/es6.number.min-safe-integer.js":"../../node_modules/core-js/modules/es6.number.min-safe-integer.js","core-js/modules/es6.number.parse-float.js":"../../node_modules/core-js/modules/es6.number.parse-float.js","core-js/modules/es6.number.parse-int.js":"../../node_modules/core-js/modules/es6.number.parse-int.js","core-js/modules/es6.object.assign.js":"../../node_modules/core-js/modules/es6.object.assign.js","core-js/modules/es7.object.define-getter.js":"../../node_modules/core-js/modules/es7.object.define-getter.js","core-js/modules/es7.object.define-setter.js":"../../node_modules/core-js/modules/es7.object.define-setter.js","core-js/modules/es7.object.entries.js":"../../node_modules/core-js/modules/es7.object.entries.js","core-js/modules/es6.object.freeze.js":"../../node_modules/core-js/modules/es6.object.freeze.js","core-js/modules/es6.object.get-own-property-descriptor.js":"../../node_modules/core-js/modules/es6.object.get-own-property-descriptor.js","core-js/modules/es7.object.get-own-property-descriptors.js":"../../node_modules/core-js/modules/es7.object.get-own-property-descriptors.js","core-js/modules/es6.object.get-own-property-names.js":"../../node_modules/core-js/modules/es6.object.get-own-property-names.js","core-js/modules/es6.object.get-prototype-of.js":"../../node_modules/core-js/modules/es6.object.get-prototype-of.js","core-js/modules/es7.object.lookup-getter.js":"../../node_modules/core-js/modules/es7.object.lookup-getter.js","core-js/modules/es7.object.lookup-setter.js":"../../node_modules/core-js/modules/es7.object.lookup-setter.js","core-js/modules/es6.object.prevent-extensions.js":"../../node_modules/core-js/modules/es6.object.prevent-extensions.js","core-js/modules/es6.object.to-string.js":"../../node_modules/core-js/modules/es6.object.to-string.js","core-js/modules/es6.object.is.js":"../../node_modules/core-js/modules/es6.object.is.js","core-js/modules/es6.object.is-frozen.js":"../../node_modules/core-js/modules/es6.object.is-frozen.js","core-js/modules/es6.object.is-sealed.js":"../../node_modules/core-js/modules/es6.object.is-sealed.js","core-js/modules/es6.object.is-extensible.js":"../../node_modules/core-js/modules/es6.object.is-extensible.js","core-js/modules/es6.object.keys.js":"../../node_modules/core-js/modules/es6.object.keys.js","core-js/modules/es6.object.seal.js":"../../node_modules/core-js/modules/es6.object.seal.js","core-js/modules/es6.object.set-prototype-of.js":"../../node_modules/core-js/modules/es6.object.set-prototype-of.js","core-js/modules/es7.object.values.js":"../../node_modules/core-js/modules/es7.object.values.js","core-js/modules/es6.promise.js":"../../node_modules/core-js/modules/es6.promise.js","core-js/modules/es7.promise.finally.js":"../../node_modules/core-js/modules/es7.promise.finally.js","core-js/modules/es6.reflect.apply.js":"../../node_modules/core-js/modules/es6.reflect.apply.js","core-js/modules/es6.reflect.construct.js":"../../node_modules/core-js/modules/es6.reflect.construct.js","core-js/modules/es6.reflect.define-property.js":"../../node_modules/core-js/modules/es6.reflect.define-property.js","core-js/modules/es6.reflect.delete-property.js":"../../node_modules/core-js/modules/es6.reflect.delete-property.js","core-js/modules/es6.reflect.get.js":"../../node_modules/core-js/modules/es6.reflect.get.js","core-js/modules/es6.reflect.get-own-property-descriptor.js":"../../node_modules/core-js/modules/es6.reflect.get-own-property-descriptor.js","core-js/modules/es6.reflect.get-prototype-of.js":"../../node_modules/core-js/modules/es6.reflect.get-prototype-of.js","core-js/modules/es6.reflect.has.js":"../../node_modules/core-js/modules/es6.reflect.has.js","core-js/modules/es6.reflect.is-extensible.js":"../../node_modules/core-js/modules/es6.reflect.is-extensible.js","core-js/modules/es6.reflect.own-keys.js":"../../node_modules/core-js/modules/es6.reflect.own-keys.js","core-js/modules/es6.reflect.prevent-extensions.js":"../../node_modules/core-js/modules/es6.reflect.prevent-extensions.js","core-js/modules/es6.reflect.set.js":"../../node_modules/core-js/modules/es6.reflect.set.js","core-js/modules/es6.reflect.set-prototype-of.js":"../../node_modules/core-js/modules/es6.reflect.set-prototype-of.js","core-js/modules/es6.regexp.constructor.js":"../../node_modules/core-js/modules/es6.regexp.constructor.js","core-js/modules/es6.regexp.flags.js":"../../node_modules/core-js/modules/es6.regexp.flags.js","core-js/modules/es6.regexp.match.js":"../../node_modules/core-js/modules/es6.regexp.match.js","core-js/modules/es6.regexp.replace.js":"../../node_modules/core-js/modules/es6.regexp.replace.js","core-js/modules/es6.regexp.split.js":"../../node_modules/core-js/modules/es6.regexp.split.js","core-js/modules/es6.regexp.search.js":"../../node_modules/core-js/modules/es6.regexp.search.js","core-js/modules/es6.regexp.to-string.js":"../../node_modules/core-js/modules/es6.regexp.to-string.js","core-js/modules/es6.set.js":"../../node_modules/core-js/modules/es6.set.js","core-js/modules/es6.symbol.js":"../../node_modules/core-js/modules/es6.symbol.js","core-js/modules/es7.symbol.async-iterator.js":"../../node_modules/core-js/modules/es7.symbol.async-iterator.js","core-js/modules/es6.string.anchor.js":"../../node_modules/core-js/modules/es6.string.anchor.js","core-js/modules/es6.string.big.js":"../../node_modules/core-js/modules/es6.string.big.js","core-js/modules/es6.string.blink.js":"../../node_modules/core-js/modules/es6.string.blink.js","core-js/modules/es6.string.bold.js":"../../node_modules/core-js/modules/es6.string.bold.js","core-js/modules/es6.string.code-point-at.js":"../../node_modules/core-js/modules/es6.string.code-point-at.js","core-js/modules/es6.string.ends-with.js":"../../node_modules/core-js/modules/es6.string.ends-with.js","core-js/modules/es6.string.fixed.js":"../../node_modules/core-js/modules/es6.string.fixed.js","core-js/modules/es6.string.fontcolor.js":"../../node_modules/core-js/modules/es6.string.fontcolor.js","core-js/modules/es6.string.fontsize.js":"../../node_modules/core-js/modules/es6.string.fontsize.js","core-js/modules/es6.string.from-code-point.js":"../../node_modules/core-js/modules/es6.string.from-code-point.js","core-js/modules/es6.string.includes.js":"../../node_modules/core-js/modules/es6.string.includes.js","core-js/modules/es6.string.italics.js":"../../node_modules/core-js/modules/es6.string.italics.js","core-js/modules/es6.string.iterator.js":"../../node_modules/core-js/modules/es6.string.iterator.js","core-js/modules/es6.string.link.js":"../../node_modules/core-js/modules/es6.string.link.js","core-js/modules/es7.string.pad-start.js":"../../node_modules/core-js/modules/es7.string.pad-start.js","core-js/modules/es7.string.pad-end.js":"../../node_modules/core-js/modules/es7.string.pad-end.js","core-js/modules/es6.string.raw.js":"../../node_modules/core-js/modules/es6.string.raw.js","core-js/modules/es6.string.repeat.js":"../../node_modules/core-js/modules/es6.string.repeat.js","core-js/modules/es6.string.small.js":"../../node_modules/core-js/modules/es6.string.small.js","core-js/modules/es6.string.starts-with.js":"../../node_modules/core-js/modules/es6.string.starts-with.js","core-js/modules/es6.string.strike.js":"../../node_modules/core-js/modules/es6.string.strike.js","core-js/modules/es6.string.sub.js":"../../node_modules/core-js/modules/es6.string.sub.js","core-js/modules/es6.string.sup.js":"../../node_modules/core-js/modules/es6.string.sup.js","core-js/modules/es7.string.trim-left.js":"../../node_modules/core-js/modules/es7.string.trim-left.js","core-js/modules/es7.string.trim-right.js":"../../node_modules/core-js/modules/es7.string.trim-right.js","core-js/modules/es6.typed.array-buffer.js":"../../node_modules/core-js/modules/es6.typed.array-buffer.js","core-js/modules/es6.typed.int8-array.js":"../../node_modules/core-js/modules/es6.typed.int8-array.js","core-js/modules/es6.typed.uint8-array.js":"../../node_modules/core-js/modules/es6.typed.uint8-array.js","core-js/modules/es6.typed.uint8-clamped-array.js":"../../node_modules/core-js/modules/es6.typed.uint8-clamped-array.js","core-js/modules/es6.typed.int16-array.js":"../../node_modules/core-js/modules/es6.typed.int16-array.js","core-js/modules/es6.typed.uint16-array.js":"../../node_modules/core-js/modules/es6.typed.uint16-array.js","core-js/modules/es6.typed.int32-array.js":"../../node_modules/core-js/modules/es6.typed.int32-array.js","core-js/modules/es6.typed.uint32-array.js":"../../node_modules/core-js/modules/es6.typed.uint32-array.js","core-js/modules/es6.typed.float32-array.js":"../../node_modules/core-js/modules/es6.typed.float32-array.js","core-js/modules/es6.typed.float64-array.js":"../../node_modules/core-js/modules/es6.typed.float64-array.js","core-js/modules/es6.weak-map.js":"../../node_modules/core-js/modules/es6.weak-map.js","core-js/modules/es6.weak-set.js":"../../node_modules/core-js/modules/es6.weak-set.js","core-js/modules/web.timers.js":"../../node_modules/core-js/modules/web.timers.js","core-js/modules/web.immediate.js":"../../node_modules/core-js/modules/web.immediate.js","core-js/modules/web.dom.iterable.js":"../../node_modules/core-js/modules/web.dom.iterable.js","regenerator-runtime/runtime.js":"../../node_modules/regenerator-runtime/runtime.js","./mapbox":"mapbox.js","./login":"login.js","./signup":"signup.js","./updateSettings":"updateSettings.js","./stripe":"stripe.js","./alerts":"alerts.js","./accountNav":"accountNav.js"}],"../../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+
+function deleteLesson(event) {
+  var btnDelete = document.querySelectorAll('.button__delete'); // console.log(event);
+
+  var index = Array.from(btnDelete).indexOf(event.target.closest('.button__delete'));
+  var btn = Array.from(btnDelete);
+  console.log(btn);
+  var length = btnDelete.length;
+
+  if (btn.length > 1) {
+    console.log(btnDelete);
+
+    var _index = Array.from(btnDelete).indexOf(event.target.closest('.button__delete'));
+
+    console.log(_index);
+    var sFnamesHold = [];
+    var sLnamesHold = [];
+    var sRelationHold = [];
+    var sDOBHold = [];
+    var sIntrumHold = [];
+    var sFnames = readCookie('student_fname');
+    var sLnames = readCookie('student_lname');
+    var sRelation = readCookie('student_relation');
+    var sDOB = readCookie('student_birthdate');
+    var sIntrum = readCookie('student_instrument');
+    sFnames.splice(_index, 1);
+    sLnames.splice(_index, 1);
+    sRelation.splice(_index, 1);
+    sDOB.splice(_index, 1);
+    sIntrum.splice(_index, 1);
+    sFnamesHold = sFnames;
+    sLnamesHold = sLnames;
+    sRelationHold = sRelation;
+    sDOBHold = sDOB;
+    sIntrumHold = sIntrum;
+    console.log(sFnames);
+    console.log(sFnamesHold);
+    document.cookie = 'student_fname=; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+    document.cookie = 'student_lname=; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+    document.cookie = 'student_relation=; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+    document.cookie = 'student_birthdate=; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+    document.cookie = 'student_instrument=; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+    console.log(sFnamesHold);
+    console.log(_index + 1);
+    console.log(_index);
+    console.log(sIntrum.splice(_index, 1));
+    console.log(sDOB.splice(_index, 1));
+    setCook('student_fname', sFnamesHold);
+    setCook('student_lname', sLnamesHold);
+    setCook('student_relation', sRelationHold);
+    setCook('student_birthdate', sDOBHold);
+    setCook('student_instrument', sIntrumHold);
+  } else {
+    console.log(btnDelete);
+    document.cookie = 'student_fname=; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+    document.cookie = 'student_lname=; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+    document.cookie = 'student_relation=; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+    document.cookie = 'student_birthdate=; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+    document.cookie = 'student_instrument=; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+  }
+
+  loadCookie();
+}
+},{"core-js/modules/es6.array.copy-within.js":"../../node_modules/core-js/modules/es6.array.copy-within.js","core-js/modules/es6.array.fill.js":"../../node_modules/core-js/modules/es6.array.fill.js","core-js/modules/es6.array.filter.js":"../../node_modules/core-js/modules/es6.array.filter.js","core-js/modules/es6.array.find.js":"../../node_modules/core-js/modules/es6.array.find.js","core-js/modules/es6.array.find-index.js":"../../node_modules/core-js/modules/es6.array.find-index.js","core-js/modules/es7.array.flat-map.js":"../../node_modules/core-js/modules/es7.array.flat-map.js","core-js/modules/es6.array.from.js":"../../node_modules/core-js/modules/es6.array.from.js","core-js/modules/es7.array.includes.js":"../../node_modules/core-js/modules/es7.array.includes.js","core-js/modules/es6.array.iterator.js":"../../node_modules/core-js/modules/es6.array.iterator.js","core-js/modules/es6.array.map.js":"../../node_modules/core-js/modules/es6.array.map.js","core-js/modules/es6.array.of.js":"../../node_modules/core-js/modules/es6.array.of.js","core-js/modules/es6.array.slice.js":"../../node_modules/core-js/modules/es6.array.slice.js","core-js/modules/es6.array.sort.js":"../../node_modules/core-js/modules/es6.array.sort.js","core-js/modules/es6.array.species.js":"../../node_modules/core-js/modules/es6.array.species.js","core-js/modules/es6.date.to-primitive.js":"../../node_modules/core-js/modules/es6.date.to-primitive.js","core-js/modules/es6.function.has-instance.js":"../../node_modules/core-js/modules/es6.function.has-instance.js","core-js/modules/es6.function.name.js":"../../node_modules/core-js/modules/es6.function.name.js","core-js/modules/es6.map.js":"../../node_modules/core-js/modules/es6.map.js","core-js/modules/es6.math.acosh.js":"../../node_modules/core-js/modules/es6.math.acosh.js","core-js/modules/es6.math.asinh.js":"../../node_modules/core-js/modules/es6.math.asinh.js","core-js/modules/es6.math.atanh.js":"../../node_modules/core-js/modules/es6.math.atanh.js","core-js/modules/es6.math.cbrt.js":"../../node_modules/core-js/modules/es6.math.cbrt.js","core-js/modules/es6.math.clz32.js":"../../node_modules/core-js/modules/es6.math.clz32.js","core-js/modules/es6.math.cosh.js":"../../node_modules/core-js/modules/es6.math.cosh.js","core-js/modules/es6.math.expm1.js":"../../node_modules/core-js/modules/es6.math.expm1.js","core-js/modules/es6.math.fround.js":"../../node_modules/core-js/modules/es6.math.fround.js","core-js/modules/es6.math.hypot.js":"../../node_modules/core-js/modules/es6.math.hypot.js","core-js/modules/es6.math.imul.js":"../../node_modules/core-js/modules/es6.math.imul.js","core-js/modules/es6.math.log1p.js":"../../node_modules/core-js/modules/es6.math.log1p.js","core-js/modules/es6.math.log10.js":"../../node_modules/core-js/modules/es6.math.log10.js","core-js/modules/es6.math.log2.js":"../../node_modules/core-js/modules/es6.math.log2.js","core-js/modules/es6.math.sign.js":"../../node_modules/core-js/modules/es6.math.sign.js","core-js/modules/es6.math.sinh.js":"../../node_modules/core-js/modules/es6.math.sinh.js","core-js/modules/es6.math.tanh.js":"../../node_modules/core-js/modules/es6.math.tanh.js","core-js/modules/es6.math.trunc.js":"../../node_modules/core-js/modules/es6.math.trunc.js","core-js/modules/es6.number.constructor.js":"../../node_modules/core-js/modules/es6.number.constructor.js","core-js/modules/es6.number.epsilon.js":"../../node_modules/core-js/modules/es6.number.epsilon.js","core-js/modules/es6.number.is-finite.js":"../../node_modules/core-js/modules/es6.number.is-finite.js","core-js/modules/es6.number.is-integer.js":"../../node_modules/core-js/modules/es6.number.is-integer.js","core-js/modules/es6.number.is-nan.js":"../../node_modules/core-js/modules/es6.number.is-nan.js","core-js/modules/es6.number.is-safe-integer.js":"../../node_modules/core-js/modules/es6.number.is-safe-integer.js","core-js/modules/es6.number.max-safe-integer.js":"../../node_modules/core-js/modules/es6.number.max-safe-integer.js","core-js/modules/es6.number.min-safe-integer.js":"../../node_modules/core-js/modules/es6.number.min-safe-integer.js","core-js/modules/es6.number.parse-float.js":"../../node_modules/core-js/modules/es6.number.parse-float.js","core-js/modules/es6.number.parse-int.js":"../../node_modules/core-js/modules/es6.number.parse-int.js","core-js/modules/es6.object.assign.js":"../../node_modules/core-js/modules/es6.object.assign.js","core-js/modules/es7.object.define-getter.js":"../../node_modules/core-js/modules/es7.object.define-getter.js","core-js/modules/es7.object.define-setter.js":"../../node_modules/core-js/modules/es7.object.define-setter.js","core-js/modules/es7.object.entries.js":"../../node_modules/core-js/modules/es7.object.entries.js","core-js/modules/es6.object.freeze.js":"../../node_modules/core-js/modules/es6.object.freeze.js","core-js/modules/es6.object.get-own-property-descriptor.js":"../../node_modules/core-js/modules/es6.object.get-own-property-descriptor.js","core-js/modules/es7.object.get-own-property-descriptors.js":"../../node_modules/core-js/modules/es7.object.get-own-property-descriptors.js","core-js/modules/es6.object.get-own-property-names.js":"../../node_modules/core-js/modules/es6.object.get-own-property-names.js","core-js/modules/es6.object.get-prototype-of.js":"../../node_modules/core-js/modules/es6.object.get-prototype-of.js","core-js/modules/es7.object.lookup-getter.js":"../../node_modules/core-js/modules/es7.object.lookup-getter.js","core-js/modules/es7.object.lookup-setter.js":"../../node_modules/core-js/modules/es7.object.lookup-setter.js","core-js/modules/es6.object.prevent-extensions.js":"../../node_modules/core-js/modules/es6.object.prevent-extensions.js","core-js/modules/es6.object.to-string.js":"../../node_modules/core-js/modules/es6.object.to-string.js","core-js/modules/es6.object.is.js":"../../node_modules/core-js/modules/es6.object.is.js","core-js/modules/es6.object.is-frozen.js":"../../node_modules/core-js/modules/es6.object.is-frozen.js","core-js/modules/es6.object.is-sealed.js":"../../node_modules/core-js/modules/es6.object.is-sealed.js","core-js/modules/es6.object.is-extensible.js":"../../node_modules/core-js/modules/es6.object.is-extensible.js","core-js/modules/es6.object.keys.js":"../../node_modules/core-js/modules/es6.object.keys.js","core-js/modules/es6.object.seal.js":"../../node_modules/core-js/modules/es6.object.seal.js","core-js/modules/es6.object.set-prototype-of.js":"../../node_modules/core-js/modules/es6.object.set-prototype-of.js","core-js/modules/es7.object.values.js":"../../node_modules/core-js/modules/es7.object.values.js","core-js/modules/es6.promise.js":"../../node_modules/core-js/modules/es6.promise.js","core-js/modules/es7.promise.finally.js":"../../node_modules/core-js/modules/es7.promise.finally.js","core-js/modules/es6.reflect.apply.js":"../../node_modules/core-js/modules/es6.reflect.apply.js","core-js/modules/es6.reflect.construct.js":"../../node_modules/core-js/modules/es6.reflect.construct.js","core-js/modules/es6.reflect.define-property.js":"../../node_modules/core-js/modules/es6.reflect.define-property.js","core-js/modules/es6.reflect.delete-property.js":"../../node_modules/core-js/modules/es6.reflect.delete-property.js","core-js/modules/es6.reflect.get.js":"../../node_modules/core-js/modules/es6.reflect.get.js","core-js/modules/es6.reflect.get-own-property-descriptor.js":"../../node_modules/core-js/modules/es6.reflect.get-own-property-descriptor.js","core-js/modules/es6.reflect.get-prototype-of.js":"../../node_modules/core-js/modules/es6.reflect.get-prototype-of.js","core-js/modules/es6.reflect.has.js":"../../node_modules/core-js/modules/es6.reflect.has.js","core-js/modules/es6.reflect.is-extensible.js":"../../node_modules/core-js/modules/es6.reflect.is-extensible.js","core-js/modules/es6.reflect.own-keys.js":"../../node_modules/core-js/modules/es6.reflect.own-keys.js","core-js/modules/es6.reflect.prevent-extensions.js":"../../node_modules/core-js/modules/es6.reflect.prevent-extensions.js","core-js/modules/es6.reflect.set.js":"../../node_modules/core-js/modules/es6.reflect.set.js","core-js/modules/es6.reflect.set-prototype-of.js":"../../node_modules/core-js/modules/es6.reflect.set-prototype-of.js","core-js/modules/es6.regexp.constructor.js":"../../node_modules/core-js/modules/es6.regexp.constructor.js","core-js/modules/es6.regexp.flags.js":"../../node_modules/core-js/modules/es6.regexp.flags.js","core-js/modules/es6.regexp.match.js":"../../node_modules/core-js/modules/es6.regexp.match.js","core-js/modules/es6.regexp.replace.js":"../../node_modules/core-js/modules/es6.regexp.replace.js","core-js/modules/es6.regexp.split.js":"../../node_modules/core-js/modules/es6.regexp.split.js","core-js/modules/es6.regexp.search.js":"../../node_modules/core-js/modules/es6.regexp.search.js","core-js/modules/es6.regexp.to-string.js":"../../node_modules/core-js/modules/es6.regexp.to-string.js","core-js/modules/es6.set.js":"../../node_modules/core-js/modules/es6.set.js","core-js/modules/es6.symbol.js":"../../node_modules/core-js/modules/es6.symbol.js","core-js/modules/es7.symbol.async-iterator.js":"../../node_modules/core-js/modules/es7.symbol.async-iterator.js","core-js/modules/es6.string.anchor.js":"../../node_modules/core-js/modules/es6.string.anchor.js","core-js/modules/es6.string.big.js":"../../node_modules/core-js/modules/es6.string.big.js","core-js/modules/es6.string.blink.js":"../../node_modules/core-js/modules/es6.string.blink.js","core-js/modules/es6.string.bold.js":"../../node_modules/core-js/modules/es6.string.bold.js","core-js/modules/es6.string.code-point-at.js":"../../node_modules/core-js/modules/es6.string.code-point-at.js","core-js/modules/es6.string.ends-with.js":"../../node_modules/core-js/modules/es6.string.ends-with.js","core-js/modules/es6.string.fixed.js":"../../node_modules/core-js/modules/es6.string.fixed.js","core-js/modules/es6.string.fontcolor.js":"../../node_modules/core-js/modules/es6.string.fontcolor.js","core-js/modules/es6.string.fontsize.js":"../../node_modules/core-js/modules/es6.string.fontsize.js","core-js/modules/es6.string.from-code-point.js":"../../node_modules/core-js/modules/es6.string.from-code-point.js","core-js/modules/es6.string.includes.js":"../../node_modules/core-js/modules/es6.string.includes.js","core-js/modules/es6.string.italics.js":"../../node_modules/core-js/modules/es6.string.italics.js","core-js/modules/es6.string.iterator.js":"../../node_modules/core-js/modules/es6.string.iterator.js","core-js/modules/es6.string.link.js":"../../node_modules/core-js/modules/es6.string.link.js","core-js/modules/es7.string.pad-start.js":"../../node_modules/core-js/modules/es7.string.pad-start.js","core-js/modules/es7.string.pad-end.js":"../../node_modules/core-js/modules/es7.string.pad-end.js","core-js/modules/es6.string.raw.js":"../../node_modules/core-js/modules/es6.string.raw.js","core-js/modules/es6.string.repeat.js":"../../node_modules/core-js/modules/es6.string.repeat.js","core-js/modules/es6.string.small.js":"../../node_modules/core-js/modules/es6.string.small.js","core-js/modules/es6.string.starts-with.js":"../../node_modules/core-js/modules/es6.string.starts-with.js","core-js/modules/es6.string.strike.js":"../../node_modules/core-js/modules/es6.string.strike.js","core-js/modules/es6.string.sub.js":"../../node_modules/core-js/modules/es6.string.sub.js","core-js/modules/es6.string.sup.js":"../../node_modules/core-js/modules/es6.string.sup.js","core-js/modules/es7.string.trim-left.js":"../../node_modules/core-js/modules/es7.string.trim-left.js","core-js/modules/es7.string.trim-right.js":"../../node_modules/core-js/modules/es7.string.trim-right.js","core-js/modules/es6.typed.array-buffer.js":"../../node_modules/core-js/modules/es6.typed.array-buffer.js","core-js/modules/es6.typed.int8-array.js":"../../node_modules/core-js/modules/es6.typed.int8-array.js","core-js/modules/es6.typed.uint8-array.js":"../../node_modules/core-js/modules/es6.typed.uint8-array.js","core-js/modules/es6.typed.uint8-clamped-array.js":"../../node_modules/core-js/modules/es6.typed.uint8-clamped-array.js","core-js/modules/es6.typed.int16-array.js":"../../node_modules/core-js/modules/es6.typed.int16-array.js","core-js/modules/es6.typed.uint16-array.js":"../../node_modules/core-js/modules/es6.typed.uint16-array.js","core-js/modules/es6.typed.int32-array.js":"../../node_modules/core-js/modules/es6.typed.int32-array.js","core-js/modules/es6.typed.uint32-array.js":"../../node_modules/core-js/modules/es6.typed.uint32-array.js","core-js/modules/es6.typed.float32-array.js":"../../node_modules/core-js/modules/es6.typed.float32-array.js","core-js/modules/es6.typed.float64-array.js":"../../node_modules/core-js/modules/es6.typed.float64-array.js","core-js/modules/es6.weak-map.js":"../../node_modules/core-js/modules/es6.weak-map.js","core-js/modules/es6.weak-set.js":"../../node_modules/core-js/modules/es6.weak-set.js","core-js/modules/web.timers.js":"../../node_modules/core-js/modules/web.timers.js","core-js/modules/web.immediate.js":"../../node_modules/core-js/modules/web.immediate.js","core-js/modules/web.dom.iterable.js":"../../node_modules/core-js/modules/web.dom.iterable.js","regenerator-runtime/runtime.js":"../../node_modules/regenerator-runtime/runtime.js","./mapbox":"mapbox.js","./login":"login.js","./signup":"signup.js","./updateSettings":"updateSettings.js","./stripe":"stripe.js","./alerts":"alerts.js","./accountNav":"accountNav.js","console":"../../node_modules/console-browserify/index.js"}],"../../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -9070,7 +12074,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "61734" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "63232" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

@@ -17,8 +17,14 @@ const studioRouter = require('./routes/studioRoutes');
 const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
 const bookingRouter = require('./routes/bookingRoutes');
+const registerRouter = require('./routes/registerRoutes');
+const availabilityExceptionRouter = require('./routes/availabilityExceptionRoutes');
+const availabilityRouter = require('./routes/availabilityRoutes');
+const instructorSettingsRouter = require('./routes/instructorSettingsRoutes');
 const bookingController = require('./controllers/bookingController');
+const registerController = require('./controllers/registerController');
 const viewRouter = require('./routes/viewRoutes');
+const formRouter = require('./routes/formRoutes');
 
 // Start express app
 const app = express();
@@ -67,6 +73,12 @@ app.post(
   bookingController.webhookCheckout
 );
 
+app.post(
+  '/checkout',
+  bodyParser.raw({ type: 'application/json' }),
+  registerController.webhookCheckout
+);
+
 // Body parser, reading data from body into req.body
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
@@ -107,6 +119,11 @@ app.use('/api/v1/studios', studioRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);
 app.use('/api/v1/bookings', bookingRouter);
+app.use('/api/v1/register', registerRouter);
+app.use('/registration', formRouter);
+app.use('/api/v1/availability-exception', availabilityExceptionRouter);
+app.use('/api/v1/availability', availabilityRouter);
+app.use('/api/v1/instructor-settings', instructorSettingsRouter);
 
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
